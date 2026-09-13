@@ -11,6 +11,9 @@ jobs:
       DART_SUPPRESS_ANALYTICS: 'true'
     steps:
       - uses: actions/checkout@v4
+      - name: Check mobile release source configuration
+        run: python3 tool/release_preflight.py --source-only --config config/public.json
+      - run: python3 -m unittest discover -s tool -p 'test_*.py'
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

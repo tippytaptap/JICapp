@@ -1,0 +1,6 @@
+# Copy to key.properties, which is ignored. Use your existing upload keystore.
+# Absolute paths are simplest. Windows paths use forward slashes.
+storeFile=/absolute/path/to/upload-keystore.jks
+storePassword=
+keyAlias=
+keyPassword=

@@ -1,0 +1,86 @@
+name: Prepare Android store release
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'Unique phone build number (1–999999); Wear uses 1000000 plus this number'
+        type: string
+        required: true
+      enable_extensions:
+        description: 'Enable workspace (only after backend deployment and account tests)'
+        type: boolean
+        default: false
+      enable_push:
+        description: 'Enable push (requires workspace, Firebase setup and delivery test)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      FLUTTER_SUPPRESS_ANALYTICS: 'true'
+      DART_SUPPRESS_ANALYTICS: 'true'
+      RELEASE_BUILD_NUMBER: ${{ inputs.build_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -s tool -p 'test_*.py'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare private signing inputs
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+          ENABLE_EXTENSIONS: ${{ inputs.enable_extensions }}
+          ENABLE_PUSH: ${{ inputs.enable_push }}
+        run: python3 tool/prepare_android_ci.py
+      - name: Check release inputs
+        run: python3 tool/release_preflight.py --platform android --config config/local.json
+      - name: Install Flutter
+        run: |
+          git clone --depth 1 --branch 3.47.4 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test --timeout 30s
+      - name: Build signed phone bundle
+        run: flutter build appbundle --release --build-number "$RELEASE_BUILD_NUMBER" --dart-define-from-file=config/local.json
+      - name: Build signed Wear bundle
+        working-directory: android
+        run: ./gradlew :wear:bundleRelease
+      - name: Record release identity
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          config = json.loads(pathlib.Path('config/local.json').read_text())
+          pathlib.Path('release-info.json').write_text(json.dumps({
+              'commit': os.environ['GITHUB_SHA'],
+              'phone_build': int(os.environ['RELEASE_BUILD_NUMBER']),
+              'wear_build': 1000000 + int(os.environ['RELEASE_BUILD_NUMBER']),
+              'workspace_enabled': config['ENABLE_EXTENSIONS'],
+              'push_enabled': config['ENABLE_PUSH'],
+              'publication': 'Not published. Upload these bundles to Google Play internal testing.'
+          }, indent=2) + '\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-store-bundles-${{ inputs.build_number }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            build/app/outputs/bundle/release/*.aab
+            build/wear/outputs/bundle/release/*.aab
+            release-info.json
+      - name: Remove private signing inputs
+        if: always()
+        run: python3 tool/prepare_android_ci.py --clean

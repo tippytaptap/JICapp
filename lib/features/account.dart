@@ -171,8 +171,8 @@ class _AccountViewState extends State<AccountView> {
           ),
           TextButton(
             onPressed: () =>
-                openLink(context, '${s.organisation.website}/admin/login'),
-            child: const Text('Password help'),
+                openLink(context, '${s.organisation.website}/account/recovery'),
+            child: const Text('Forgot password?'),
           ),
         ] else ...[
           if (s.profileLoading)

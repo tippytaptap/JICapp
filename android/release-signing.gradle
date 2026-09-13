@@ -1,0 +1,38 @@
+import java.util.Properties
+
+// Phone and Wear must share a release certificate for the Wear Data Layer.
+// This file contains no credentials; both modules read the ignored local file.
+def credentialsFile = rootProject.file('key.properties')
+def credentials = new Properties()
+if (credentialsFile.isFile()) {
+    credentialsFile.withInputStream { credentials.load(it) }
+}
+def requiredKeys = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+def complete = requiredKeys.every { credentials.getProperty(it)?.trim() }
+def keyStoreFile = complete ? rootProject.file(credentials.getProperty('storeFile')) : null
+
+if (complete && keyStoreFile.isFile()) {
+    android.signingConfigs.create('release') {
+        storeFile = keyStoreFile
+        storePassword = credentials.getProperty('storePassword')
+        keyAlias = credentials.getProperty('keyAlias')
+        keyPassword = credentials.getProperty('keyPassword')
+    }
+    android.buildTypes.getByName('release').signingConfig = android.signingConfigs.getByName('release')
+}
+
+def verifyCredentials = tasks.register('verifyReleaseCredentials') {
+    group = 'verification'
+    description = 'Require private release signing for phone and Wear builds.'
+    doLast {
+        if (!complete || !keyStoreFile.isFile()) {
+            throw new GradleException('Release signing is not configured. Add android/key.properties and an existing upload keystore as described in docs/MOBILE-RELEASE.md. Debug builds remain available.')
+        }
+    }
+}
+
+tasks.configureEach {
+    if (name != 'verifyReleaseCredentials' && name.toLowerCase(Locale.ROOT).contains('release')) {
+        dependsOn(verifyCredentials)
+    }
+}
