@@ -25,7 +25,7 @@ Source is saved incrementally in `tippytaptap/JICapp`. The website companion is 
 - Full offline reading library, reading-position/bookmark sync and verified licensed source editions.
 - Apple Watch/Wear OS companion apps and watch complications/Tasbih; physical counter integration requires the device protocol. Watch features are not implemented by a phone widget.
 - Server-side authorised Streamerr recording/transcription, reviewed summaries and verified quotations/references. Quote image generation follows source review; an image generator must not invent scripture citations.
-- Existing website mosque-TV contracts are preserved. A paired private display route, poster/YouTube scheduling and a mosque-local camera gateway remain a separate integration. A hidden URL is not access control; browsers cannot play arbitrary RTSP camera URLs directly.
+- Existing website mosque-TV displays, pairing, scene templates, posters and stream-control code are preserved. Connecting the chosen smart screens and mosque-local IP camera gateway, and verifying the installation's live YouTube behaviour, remain rollout work. The app does not duplicate those web display controls. Browsers cannot play arbitrary RTSP camera URLs directly.
 - Email forwarding/reply ingestion and digest delivery. Current email actions open drafts; they do not deliver or track email inside the portal.
 
 ## Rollout order
@@ -40,4 +40,4 @@ Source is saved incrementally in `tippytaptap/JICapp`. The website companion is 
 
 The initial public app checkpoint `e1eb6c3` passed GitHub Flutter analysis/tests/web and Android debug APK build. The APK artifact is a preview without production connection settings. Later workspace/widgets/notification changes require their own build result; the earlier APK does not verify those changes.
 
-Website companion: 213 tests, lint, enabled Vite production build and four mobile-browser routes passed. Backend tests execute PostgreSQL policies and transactions in PGlite; they do not replace managed Supabase staging checks. Native device/APNs delivery and Xcode builds are unverified in this Linux workspace.
+Website companion: 214 tests, lint, enabled Vite production build and four mobile-browser routes passed. Flutter workspace checkpoint: 16 tests, analysis and an extensions-enabled web build passed. Backend tests execute PostgreSQL policies and transactions in PGlite; they do not replace managed Supabase staging checks. Native device/APNs delivery and Xcode builds are unverified in this Linux workspace.

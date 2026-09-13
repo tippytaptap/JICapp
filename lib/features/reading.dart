@@ -38,7 +38,7 @@ class ReadingView extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Continue · Surah ${state.preferences.getInt('quran.surah') ?? 1} →',
+                  'Continue · Surah ${state.preferences.getInt('quran.surah') ?? 1}',
                 ),
               ],
             ),

@@ -45,14 +45,16 @@ class AppState extends ChangeNotifier {
     await notifications.initialise();
     _observedAuthUser = userId;
     _auth = client?.auth.onAuthStateChange.listen((event) {
-      if (_observedAuthUser != event.session?.user.id ||
-          event.session == null) {
+      final identityChanged = _observedAuthUser != event.session?.user.id;
+      if (identityChanged || event.session == null) {
         unawaited(notifications.syncAccount(activeAccount: false));
       }
       _observedAuthUser = event.session?.user.id;
       final generation = ++_authGeneration;
-      profile = null;
-      profileLoading = event.session != null;
+      // Keep unfinished forms mounted during a routine same-account refresh.
+      // Identity changes still clear private data before another frame renders.
+      if (identityChanged || event.session == null) profile = null;
+      profileLoading = profile == null && event.session != null;
       notifyListeners();
       // Avoid awaiting Supabase calls inside its synchronous auth notification.
       unawaited(Future(() => refreshProfile(generation)));

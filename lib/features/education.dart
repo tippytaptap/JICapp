@@ -155,7 +155,14 @@ class ProgrammeCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text('${programme['schedule'] ?? ''}'),
                 const SizedBox(height: 12),
-                const Text('View programme →'),
+                const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('View programme'),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward, size: 16),
+                  ],
+                ),
               ],
             ),
           ),

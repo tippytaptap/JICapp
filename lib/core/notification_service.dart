@@ -167,7 +167,6 @@ class NotificationService extends ChangeNotifier {
   Future<void> initialise() async {
     if (!supported) return;
     await _run(() async {
-      await _loadBinding();
       await _ensureLocal();
       final launch = await _local.getNotificationAppLaunchDetails();
       final payload = launch?.notificationResponse?.payload;
@@ -175,6 +174,7 @@ class NotificationService extends ChangeNotifier {
           (payload == 'prayers' || payload == 'inbox')) {
         _open(payload!);
       }
+      if (pushAvailable) await _loadBinding();
     });
   }
 
@@ -345,6 +345,7 @@ class NotificationService extends ChangeNotifier {
           'register_push_device',
           params: {
             'p_token': token,
+            'p_previous_token': previous,
             'p_platform': defaultTargetPlatform == TargetPlatform.iOS
                 ? 'ios'
                 : 'android',
@@ -360,11 +361,6 @@ class NotificationService extends ChangeNotifier {
     );
     _requireSameAccount(user, generation);
     _pushRegistered = true;
-    if (previous != null && previous != token) {
-      await client!
-          .rpc('unregister_push_device', params: {'p_token': previous})
-          .timeout(const Duration(seconds: 8));
-    }
   }
 
   Future<void> _connect(
