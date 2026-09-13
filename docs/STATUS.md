@@ -38,6 +38,6 @@ Source is saved incrementally in `tippytaptap/JICapp`. The website companion is 
 
 ## Verified checkpoint
 
-The initial public app checkpoint `e1eb6c3` passed GitHub Flutter analysis/tests/web and Android debug APK build. The APK artifact is a preview without production connection settings. Later workspace/widgets/notification changes require their own build result; the earlier APK does not verify those changes.
+Both the initial public checkpoint `e1eb6c3` and workspace/widgets/notification checkpoint `ed4468d` passed GitHub Flutter analysis, tests, web build and Android debug APK build. [The workspace preview APK](https://github.com/tippytaptap/JICapp/actions/runs/34751634783) is available as the `android-preview` artifact. It has no production connection settings and its workspace feature flag is off; this is a UI/device preview. Subsequent authentication/token-rotation corrections are saved in `7f12633` and have their own build run. Compilation does not establish live notification delivery or device behaviour.
 
 Website companion: 214 tests, lint, enabled Vite production build and four mobile-browser routes passed. Flutter workspace checkpoint: 16 tests, analysis and an extensions-enabled web build passed. Backend tests execute PostgreSQL policies and transactions in PGlite; they do not replace managed Supabase staging checks. Native device/APNs delivery and Xcode builds are unverified in this Linux workspace.
