@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/app_state.dart';
 import '../core/models.dart';
 import '../widgets/common.dart';
+import 'learning_resources.dart';
 import 'workspace.dart';
 
 const _requestTimeout = Duration(seconds: 20);
@@ -108,21 +109,12 @@ class _CoursePageState extends State<_CoursePage> {
           .eq('id', widget.courseId)
           .single()
           .timeout(_requestTimeout);
-      final assignment = owner(widget.state.profile)
-          ? <Record>[]
-          : records(
-              await widget.state.client!
-                  .from('learning_staff')
-                  .select('role')
-                  .eq('course_id', widget.courseId)
-                  .eq('user_id', widget.state.userId!)
-                  .limit(1)
-                  .timeout(_requestTimeout),
-            );
+      final canTeach = await widget.state.client!.rpc('can_teach_course',
+        params: {'p_course_id': widget.courseId}).timeout(_requestTimeout) == true;
       if (!mounted) return;
       setState(() {
         course = fresh;
-        teacher = owner(widget.state.profile) || assignment.isNotEmpty;
+        teacher = canTeach;
         loading = false;
       });
     } catch (_) {
@@ -170,6 +162,13 @@ class _CoursePageState extends State<_CoursePage> {
                   const Text(
                     'You can manage teaching and records for this course.',
                   ),
+                ActionTile(
+                  icon: Icons.folder_open,
+                  title: 'Course resources',
+                  subtitle: 'Lesson files, recordings and useful links',
+                  onTap: () => showPrivatePage(context, state,
+                    CourseResourcesPage(state, id, teacher)),
+                ),
                 ActionTile(
                   icon: Icons.calendar_month_outlined,
                   title: 'Class sessions',
@@ -778,7 +777,8 @@ class _WritingEditor extends StatefulWidget {
 
 class _WritingEditorState extends State<_WritingEditor> {
   final form = GlobalKey<FormState>();
-  late final TextEditingController title, body;
+  late final TextEditingController title, body, score, maximum;
+  DateTime? dueOn;
   late String kind;
   bool published = false;
   @override
@@ -786,6 +786,9 @@ class _WritingEditorState extends State<_WritingEditor> {
     super.initState();
     title = TextEditingController(text: widget.existing?['title'] ?? '');
     body = TextEditingController(text: widget.existing?['body'] ?? '');
+    score = TextEditingController(text: '${widget.existing?['score'] ?? ''}');
+    maximum = TextEditingController(text: '${widget.existing?['max_score'] ?? ''}');
+    dueOn = DateTime.tryParse('${widget.existing?['due_on'] ?? ''}');
     kind =
         widget.existing?['kind'] ??
         (widget.contribution ? 'poetry' : 'progress');
@@ -796,6 +799,8 @@ class _WritingEditorState extends State<_WritingEditor> {
   void dispose() {
     title.dispose();
     body.dispose();
+    score.dispose();
+    maximum.dispose();
     super.dispose();
   }
 
@@ -846,6 +851,34 @@ class _WritingEditorState extends State<_WritingEditor> {
                 : null,
           ),
           if (!widget.contribution)
+            Column(children: [
+              if (kind == 'assessment') ...[
+                TextFormField(controller: score,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(labelText: 'Mark (optional)'),
+                  validator: (value) {
+                    if ((value ?? '').trim().isEmpty && maximum.text.trim().isEmpty) return null;
+                    final n = double.tryParse(value ?? '');
+                    final max = double.tryParse(maximum.text);
+                    return n == null || max == null || !n.isFinite || !max.isFinite || n < 0 || max <= 0 || max > 1000000 || n > max
+                      ? 'Enter a mark between zero and the maximum.' : null;
+                  }),
+                TextFormField(controller: maximum,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(labelText: 'Maximum mark')),
+              ],
+              ListTile(contentPadding: EdgeInsets.zero,
+                title: Text(dueOn == null ? 'Target date (optional)' : 'Target: ${dateKey(dueOn!)}'),
+                trailing: dueOn == null ? const Icon(Icons.calendar_month) : IconButton(
+                  tooltip: 'Clear target date', icon: const Icon(Icons.clear),
+                  onPressed: () => setState(() => dueOn = null)),
+                onTap: () async {
+                  final selected = await showDatePicker(context: context,
+                    initialDate: dueOn ?? DateTime.now(), firstDate: DateTime(2020), lastDate: DateTime(2100));
+                  if (selected != null && mounted) setState(() => dueOn = selected);
+                }),
+            ]),
+          if (!widget.contribution)
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
               title: const Text('Share with the student and guardian'),
@@ -884,6 +917,9 @@ class _WritingEditorState extends State<_WritingEditor> {
                   'title': title.text.trim(),
                   'body': body.text.trim(),
                   'published': published,
+                  'score': kind == 'assessment' ? double.tryParse(score.text) : null,
+                  'max_score': kind == 'assessment' ? double.tryParse(maximum.text) : null,
+                  'due_on': dueOn == null ? null : dateKey(dueOn!),
                 };
                 if (widget.existing == null) {
                   await widget.state.client!
@@ -1002,6 +1038,18 @@ class _WritingDetailState extends State<_WritingDetail> {
               ),
               const SizedBox(height: 20),
               SelectableText('${row!['body']}'),
+              if (row!['score'] != null)
+                Padding(padding: const EdgeInsets.only(top: 16), child: Text('Mark: ${row!['score']} / ${row!['max_score']}')),
+              if (row!['due_on'] != null)
+                Text('Target date: ${row!['due_on']}'),
+              if (widget.table == 'learning_records' && row!['kind'] == 'plan')
+                AsyncButton(label: row!['completed_at'] == null ? 'Mark plan complete' : 'Reopen plan',
+                  onPressed: () async {
+                    await widget.state.client!.rpc('set_learning_plan_complete', params: {
+                      'p_id': row!['id'], 'p_complete': row!['completed_at'] == null,
+                    }).timeout(_requestTimeout);
+                    await _load();
+                  }),
               const SizedBox(height: 24),
               if (widget.teacher) ...[
                 AsyncButton(

@@ -4,6 +4,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:audio_session/audio_session.dart';
 import 'config.dart';
+import 'models.dart';
 
 class RadioController extends ChangeNotifier {
   final Organisation organisation;
@@ -19,13 +20,30 @@ class RadioController extends ChangeNotifier {
   DateTime? stopAt;
   bool busy = false;
   String? error;
-  bool get playing => player.playing;
-  Future<void> play() async {
+  String? sourceUrl;
+  String currentTitle = 'Live radio';
+  bool get isRadio => sourceUrl == null || sourceUrl == organisation.radio;
+  bool get playing =>
+      player.playing && player.processingState != ProcessingState.completed;
+
+  Future<void> play() => _playSource(organisation.radio, 'Live radio');
+
+  Future<void> playRecording(String url, String title) async {
+    if (!safeWebUrl(url))
+      throw ArgumentError('A secure recording URL is required.');
+    await _playSource(url, title);
+    if (error != null) throw StateError(error!);
+  }
+
+  Future<void> _playSource(String url, String title) async {
     if (busy) return;
     busy = true;
     error = null;
     notifyListeners();
     try {
+      _sleep?.cancel();
+      stopAt = null;
+      await player.stop();
       if (!kIsWeb) {
         await (await AudioSession.instance).configure(
           const AudioSessionConfiguration.speech(),
@@ -34,23 +52,21 @@ class RadioController extends ChangeNotifier {
       await player
           .setAudioSource(
             AudioSource.uri(
-              Uri.parse(organisation.radio),
-              tag: MediaItem(
-                id: organisation.radio,
-                title: 'Live radio',
-                album: organisation.name,
-              ),
+              Uri.parse(url),
+              tag: MediaItem(id: url, title: title, album: organisation.name),
             ),
           )
           .timeout(const Duration(seconds: 25));
+      sourceUrl = url;
+      currentTitle = title;
       unawaited(
         player.play().catchError((Object _) {
-          error = 'Radio could not play. Try again.';
+          error = 'Audio could not play. Try again.';
           notifyListeners();
         }),
       );
     } catch (_) {
-      error = 'The radio stream is unavailable. Try again shortly.';
+      error = 'Audio is unavailable. Try again shortly.';
       await player.stop();
     } finally {
       busy = false;

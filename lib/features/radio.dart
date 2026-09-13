@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/radio_controller.dart';
+import '../core/app_state.dart';
+import 'sermons.dart';
 import '../widgets/common.dart';
 
 class RadioPage extends StatelessWidget {
   final RadioController radio;
-  const RadioPage(this.radio, {super.key});
+  final AppState? state;
+  const RadioPage(this.radio, {super.key, this.state});
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: radio,
     builder: (context, _) => ContentPage(
-      title: 'Live radio',
+      title: radio.currentTitle,
       child: ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -23,7 +26,10 @@ class RadioPage extends StatelessWidget {
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 12),
-          const Text('Listen wherever you are', textAlign: TextAlign.center),
+          Text(
+            radio.isRadio ? 'Listen wherever you are' : radio.currentTitle,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 32),
           FilledButton.icon(
             onPressed: radio.busy
@@ -36,14 +42,21 @@ class RadioPage extends StatelessWidget {
               radio.busy
                   ? 'Connecting…'
                   : radio.playing
-                  ? 'Stop radio'
-                  : 'Play radio',
+                  ? 'Stop audio'
+                  : 'Play live radio',
             ),
           ),
           if (radio.error != null)
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(radio.error!),
+            ),
+          if (state != null)
+            ActionTile(
+              icon: Icons.headphones_outlined,
+              title: 'Talks & reflections',
+              subtitle: 'Recordings, summaries and reviewed quotes',
+              onTap: () => showPage(context, SermonArchivePage(state!, radio)),
             ),
           const SectionTitle(
             'Sleep timer',

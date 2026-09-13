@@ -5,6 +5,7 @@ import '../core/models.dart';
 import '../widgets/common.dart';
 import 'account.dart';
 import 'learning.dart';
+import 'custom_forms.dart';
 
 const taskStatuses = {
   'open': 'Open',
@@ -509,6 +510,12 @@ class _UpdatesPageState extends State<UpdatesPage> {
           widget.state,
           update['kind'] == 'task'
               ? TasksPage(widget.state, taskId: '${update['entity_id']}')
+              : update['kind'] == 'form'
+              ? FormConversationPage(
+                  widget.state,
+                  submissionId: '${update['entity_id']}',
+                  staff: true,
+                )
               : LearningPage(widget.state),
         ),
         onRead: () async {
@@ -544,7 +551,11 @@ class UpdateCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            update['kind'] == 'task' ? 'Task update' : 'Learning update',
+            update['kind'] == 'task'
+                ? 'Task update'
+                : update['kind'] == 'form'
+                ? 'Form reply'
+                : 'Learning update',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           Text(formatWorkspaceDate(update['created_at'])),

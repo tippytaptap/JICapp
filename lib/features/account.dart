@@ -5,6 +5,8 @@ import '../core/config.dart';
 import '../core/models.dart';
 import '../widgets/common.dart';
 import 'forms.dart';
+import 'custom_forms.dart';
+import 'user_management.dart';
 import 'notification_settings.dart';
 import 'workspace.dart';
 import 'learning.dart';
@@ -141,11 +143,12 @@ class _AccountViewState extends State<AccountView> {
               '${s.profile?['display_name'] ?? 'Welcome'}',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
-            if ([
-              'contact',
-              'madrassah',
-              'itikaaf',
-            ].any((k) => can(s.profile, 'forms_$k')))
+            if (!extensionsEnabled &&
+                [
+                  'contact',
+                  'madrassah',
+                  'itikaaf',
+                ].any((k) => can(s.profile, 'forms_$k')))
               ActionTile(
                 icon: Icons.inbox_outlined,
                 title: 'Forms inbox',
@@ -166,6 +169,13 @@ class _AccountViewState extends State<AccountView> {
                 ),
               ),
             if (extensionsEnabled) ...[
+              ActionTile(
+                icon: Icons.dynamic_form_outlined,
+                title: 'Forms & responses',
+                subtitle:
+                    'Registrations, replies, assigned actions and form creation',
+                onTap: () => showPrivatePage(context, s, FormsWorkspacePage(s)),
+              ),
               ActionTile(
                 icon: Icons.task_alt,
                 title: 'Tasks',
@@ -190,8 +200,10 @@ class _AccountViewState extends State<AccountView> {
                 icon: Icons.manage_accounts_outlined,
                 title: 'Manage people & access',
                 subtitle: 'Create accounts and assign permissions',
-                onTap: () =>
-                    openLink(context, '${s.organisation.website}/admin'),
+                onTap: () => showPage(
+                  context,
+                  AccountGate(s, permission: 'users', child: PeoplePage(s)),
+                ),
               ),
           ],
           const SizedBox(height: 20),
@@ -209,6 +221,13 @@ class _AccountViewState extends State<AccountView> {
             },
           ),
         ],
+        if (extensionsEnabled)
+          ActionTile(
+            icon: Icons.description_outlined,
+            title: 'Forms & registrations',
+            subtitle: 'Open community forms',
+            onTap: () => showPage(context, PublicFormsPage(s)),
+          ),
         const SectionTitle('Preferences'),
         ActionTile(
           icon: Icons.notifications_active_outlined,

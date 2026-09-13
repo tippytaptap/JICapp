@@ -8,12 +8,15 @@ import 'config.dart';
 import 'models.dart';
 import 'widget_service.dart';
 import 'notification_service.dart';
+import 'radio_controller.dart';
 
 class AppState extends ChangeNotifier {
   final Organisation organisation;
   final SupabaseClient? client;
   final SharedPreferences preferences;
   AppState(this.organisation, this.client, this.preferences);
+  RadioController? _radio;
+  RadioController get radio => _radio ??= RadioController(organisation);
   late final notifications = NotificationService(
     organisation,
     client,
@@ -238,6 +241,7 @@ class AppState extends ChangeNotifier {
   void dispose() {
     _auth?.cancel();
     notifications.dispose();
+    _radio?.dispose();
     super.dispose();
   }
 }

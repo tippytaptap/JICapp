@@ -44,7 +44,7 @@ Future<void> main() async {
     client,
     await SharedPreferences.getInstance(),
   );
-  final radio = RadioController(organisation);
+  final radio = state.radio;
   runApp(CommunityApp(state, radio));
   unawaited(state.initialise());
 }

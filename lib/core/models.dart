@@ -23,6 +23,8 @@ const capabilities = [
   'forms_contact',
   'forms_madrassah',
   'forms_itikaaf',
+  'forms_manage',
+  'forms_custom',
   'users',
   'audit',
   'delete_content',

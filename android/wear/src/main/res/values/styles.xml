@@ -1,0 +1,8 @@
+<resources>
+    <style name="WatchTheme" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#D3AD60</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">#111820</item>
+    </style>
+</resources>

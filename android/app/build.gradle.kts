@@ -4,7 +4,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+if (file("google-services.json").exists()) { apply(plugin = "com.google.gms.google-services") }
+
 android {
+    sourceSets.getByName("main").java.srcDir("../watch-shared/src/main/kotlin")
     namespace = "com.mastir.community_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
@@ -49,4 +52,7 @@ flutter {
     source = "../.."
 }
 
-dependencies { coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5") }
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    implementation("com.google.android.gms:play-services-wearable:20.0.1")
+}
