@@ -46,7 +46,7 @@ Before a signed release, register these identifiers under the chosen developer a
 
 ## Validation
 
-Locally verified: Dart analysis, three transport/handoff tests, Xcode project graph and plist/scheme parsing. Native watch builds require the Android CI and macOS Xcode CI outputs. This Linux workspace cannot claim an Apple device test or store-ready signing. Physical paired-device checks remain necessary for delivery after disconnection, watch replacement, foreground compass calibration, haptic feel, complication refresh and small/round displays.
+Locally verified: Dart analysis, three transport/handoff tests, Xcode project graph and plist/scheme parsing. Android phone and Wear OS debug APKs compiled successfully in GitHub Actions run 34754702602 at commit 9e70a7b; both artifacts were uploaded. The initial Apple job stopped before compilation because Flutter requires an explicit simulator device ID when a watch companion is embedded. The workflow now selects an available iPhone simulator; its next macOS result remains pending. This Linux workspace cannot claim an Apple device test or store-ready signing. Physical paired-device checks remain necessary for delivery after disconnection, watch replacement, foreground compass calibration, haptic feel, complication refresh and small/round displays.
 
 ## Official references
 

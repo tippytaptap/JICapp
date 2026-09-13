@@ -7,6 +7,7 @@ import 'package:community_app/core/models.dart';
 import 'package:community_app/features/account.dart';
 import 'package:community_app/features/custom_forms.dart';
 import 'package:community_app/features/user_management.dart';
+import 'package:community_app/features/learning_management.dart';
 
 void main() {
   test('Hidden answers are omitted and visible numeric answers are typed', () {
@@ -268,4 +269,41 @@ void main() {
       state.dispose();
     },
   );
+  testWidgets('Removing owner access hides learning relationship management', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final state = AppState(
+      Organisation({'website': 'https://example.org'}),
+      null,
+      await SharedPreferences.getInstance(),
+    );
+    state.profile = {
+      'id': 'manager',
+      'is_active': true,
+      'is_owner': true,
+      'permissions': ['users'],
+    };
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LearningOwnerGate(
+          state,
+          child: const Scaffold(body: Text('Private guardian links')),
+        ),
+      ),
+    );
+    expect(find.text('Private guardian links'), findsOneWidget);
+    state.profile = {
+      'id': 'manager',
+      'is_active': true,
+      'is_owner': false,
+      'permissions': ['users'],
+    };
+    state.notifyListeners();
+    await tester.pumpAndSettle();
+    expect(find.text('Private guardian links'), findsNothing);
+    expect(find.text('Owner access is required.'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    state.dispose();
+  });
 }

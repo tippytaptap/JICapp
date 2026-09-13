@@ -6,6 +6,7 @@ import '../widgets/common.dart';
 import 'account.dart';
 import 'learning.dart';
 import 'custom_forms.dart';
+import 'fees.dart';
 
 const taskStatuses = {
   'open': 'Open',
@@ -527,6 +528,8 @@ class _UpdatesPageState extends State<UpdatesPage> {
           widget.state,
           update['kind'] == 'task'
               ? TasksPage(widget.state, taskId: '${update['entity_id']}')
+              : update['kind'] == 'fee'
+              ? FeeLedgerPage(widget.state, feeId: '${update['entity_id']}')
               : update['kind'] == 'form'
               ? FormConversationPage(
                   widget.state,
@@ -570,6 +573,8 @@ class UpdateCard extends StatelessWidget {
           Text(
             update['kind'] == 'task'
                 ? 'Task update'
+                : update['kind'] == 'fee'
+                ? FeeLedgerPage(widget.state, feeId: '${update['entity_id']}')
                 : update['kind'] == 'form'
                 ? 'Form reply'
                 : 'Learning update',

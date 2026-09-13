@@ -10,6 +10,7 @@ import 'user_management.dart';
 import 'notification_settings.dart';
 import 'workspace.dart';
 import 'learning.dart';
+import 'learning_management.dart';
 
 class AccountGate extends StatelessWidget {
   final AppState state;
@@ -195,6 +196,15 @@ class _AccountViewState extends State<AccountView> {
                 onTap: () => showPrivatePage(context, s, LearningPage(s)),
               ),
             ],
+            if (extensionsEnabled && owner(s.profile))
+              ActionTile(
+                icon: Icons.school_outlined,
+                title: 'Manage learning',
+                subtitle:
+                    'Courses, students, guardians, teachers and enrolments',
+                onTap: () =>
+                    openLearningAdmin(context, s, LearningManagementPage(s)),
+              ),
             if (owner(s.profile) || can(s.profile, 'users'))
               ActionTile(
                 icon: Icons.manage_accounts_outlined,

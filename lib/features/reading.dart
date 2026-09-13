@@ -350,14 +350,22 @@ class _QuranPageState extends State<QuranPage> {
       searchController.clear();
       request = store.read(number);
     });
-    unawaited(store.setPosition(number, ayah));
+    unawaited(savePosition(number, ayah));
     if (scroll.hasClients) scroll.jumpTo(0);
   }
 
   void movePage(int ayah) {
     setState(() => firstAyah = ayah);
-    unawaited(store.setPosition(surah, ayah));
+    unawaited(savePosition(surah, ayah));
     if (scroll.hasClients) scroll.jumpTo(0);
+  }
+
+  Future<void> savePosition(int number, int ayah) async {
+    try {
+      await store.setPosition(number, ayah);
+    } catch (_) {
+      if (mounted) notice(context, 'Your reading position could not be saved.');
+    }
   }
 
   Future<void> selectSurah() async {

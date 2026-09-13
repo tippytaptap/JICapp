@@ -10,6 +10,8 @@ import '../core/models.dart';
 import '../widgets/common.dart';
 import 'account.dart';
 import 'workspace.dart';
+import 'fees.dart';
+import 'form_email.dart';
 
 const customFieldTypes = [
   'text',
@@ -746,9 +748,13 @@ class _FormsWorkspacePageState extends State<FormsWorkspacePage> {
 
 String formCsvCell(dynamic value) {
   var text = value == null ? '' : '$value';
-  if (RegExp(r'^[\s\x00-\x1f]*[=+\-@]').hasMatch(text) || RegExp(r'^[\t\r]').hasMatch(text)) text = "'$text";
+  if (RegExp(r'^[\s\x00-\x1f]*[=+\-@]').hasMatch(text) ||
+      RegExp(r'^[\t\r]').hasMatch(text)) {
+    text = "'$text";
+  }
   return '"${text.replaceAll('"', '""')}"';
 }
+
 String responsesCsv(List<Record> rows) {
   final columns = <String, String>{};
   String source(Record row) => '${row['custom_form_id'] ?? row['kind']}';
@@ -768,27 +774,9 @@ String responsesCsv(List<Record> rows) {
   dynamic cell(dynamic value) =>
       value is List || value is Map ? jsonEncode(value) : value ?? '';
   return '\ufeff${[
-        [
-          'ID',
-          'Form',
-          'Status',
-          'Submitted',
-          'Version',
-          ...columns.values,
-        ].map(formCsvCell).join(','),
-        for (final row in rows)
-          [
-            row['id'],
-            row['schema_snapshot']?['title'] ?? row['kind'],
-            row['status'],
-            row['created_at'],
-            row['form_version'] ?? '',
-            for (final key in columns.keys)
-              key.startsWith('${source(row)}:')
-                  ? cell(row['payload']?[key.substring(source(row).length + 1)])
-                  : '',
-          ].map(formCsvCell).join(','),
-      ].join('\r\n')}';
+    ['ID', 'Form', 'Status', 'Submitted', 'Version', ...columns.values].map(formCsvCell).join(','),
+    for (final row in rows) [row['id'], row['schema_snapshot']?['title'] ?? row['kind'], row['status'], row['created_at'], row['form_version'] ?? '', for (final key in columns.keys) key.startsWith('${source(row)}:') ? cell(row['payload']?[key.substring(source(row).length + 1)]) : ''].map(formCsvCell).join(','),
+  ].join('\r\n')}';
 }
 
 class CustomInboxPage extends StatefulWidget {
@@ -815,40 +803,58 @@ class _CustomInboxPageState extends State<CustomInboxPage> {
         .order('title')
         .limit(100),
   );
-  Future<Record> load({int? offset, int limit = 25}) async => Record.from(
-    await widget.state.client!
-        .rpc(
-          'search_form_submissions',
-          params: {
-            'p_search': search,
-            'p_kind': widget.mine
-                ? 'custom'
-                : kind == 'all'
-                ? null
-                : kind,
-            'p_form_id': formId,
-            'p_status': status == 'all' ? null : status,
-            'p_from': from?.toUtc().toIso8601String(),
-            'p_to': to?.add(const Duration(days: 1)).toUtc().toIso8601String(),
-            'p_offset': offset ?? page * 25,
-            'p_limit': limit,
-            'p_oldest': oldest,
-            'p_mine': widget.mine,
-          },
-        )
-        .timeout(const Duration(seconds: 25)),
-  );
+  Record filterParameters() => {
+    'p_search': search,
+    'p_kind': widget.mine
+        ? 'custom'
+        : kind == 'all'
+        ? null
+        : kind,
+    'p_form_id': formId,
+    'p_status': status == 'all' ? null : status,
+    'p_from': from?.toUtc().toIso8601String(),
+    'p_to': to == null
+        ? null
+        : DateTime(to!.year, to!.month, to!.day + 1).toUtc().toIso8601String(),
+    'p_oldest': oldest,
+    'p_mine': widget.mine,
+  };
+  Future<Record> load({int? offset, int limit = 25, Record? filters}) async =>
+      Record.from(
+        await widget.state.client!
+            .rpc(
+              'search_form_submissions',
+              params: {
+                ...filters ?? filterParameters(),
+                'p_offset': offset ?? page * 25,
+                'p_limit': limit,
+              },
+            )
+            .timeout(const Duration(seconds: 25)),
+      );
   void reload({bool reset = false}) => setState(() {
     if (reset) page = 0;
     request = load();
   });
-  Future<List<Record>> allMatching() async {
+  Future<List<Record>> allMatching(Record filters) async {
+    final identity = widget.state.userId;
     final rows = <Record>[];
+    var totalBytes = 0;
     for (var offset = 0; offset <= 25000; offset += 100) {
-      final result = await load(offset: offset, limit: 100);
-      if ((result['total'] as num? ?? 0) > 25000) {
-        throw StateError('Narrow filters');
+      if (!mounted || widget.state.userId != identity) {
+        throw StateError('Account changed');
       }
+      final result = await load(offset: offset, limit: 100, filters: filters);
+      if ((result['total'] as num? ?? 0) > 25000) {
+        throw StateError(
+          'More than 25,000 responses match. Narrow the date or form filters before exporting.',
+        );
+      }
+      totalBytes += utf8.encode(jsonEncode(result['rows'])).length;
+      if (totalBytes > 25 * 1024 * 1024)
+        throw StateError(
+          'This export is too large for one file. Narrow the date or form filters.',
+        );
       rows.addAll(records(result['rows']));
       if (rows.length >= (result['total'] as num? ?? 0) ||
           records(result['rows']).length < 100) {
@@ -859,8 +865,34 @@ class _CustomInboxPageState extends State<CustomInboxPage> {
   }
 
   Future<void> export(bool zip) async {
-    final rows = await allMatching();
-    if (rows.isEmpty) return;
+    final filters = filterParameters();
+    filters['p_to'] ??= DateTime.now().toUtc().toIso8601String();
+    final identity = widget.state.userId;
+    List<Record> rows;
+    if (zip) {
+      if (filters['p_form_id'] == null) {
+        notice(context, 'Choose one custom form before downloading its files.');
+        return;
+      }
+      final result = await load(offset: 0, limit: 100, filters: filters);
+      if (!mounted || widget.state.userId != identity) return;
+      if ((result['total'] as num? ?? 0) > 100) {
+        notice(
+          context,
+          'Narrow the filters to 100 responses or fewer for ZIP.',
+        );
+        return;
+      }
+      rows = records(result['rows']);
+    } else {
+      try {
+        rows = await allMatching(filters);
+      } on StateError catch (error) {
+        if (mounted) notice(context, error.message);
+        return;
+      }
+    }
+    if (rows.isEmpty || !mounted || widget.state.userId != identity) return;
     if (!zip) {
       await shareFormBytes(
         Uint8List.fromList(utf8.encode(responsesCsv(rows))),
@@ -869,7 +901,7 @@ class _CustomInboxPageState extends State<CustomInboxPage> {
       );
       return;
     }
-    if (formId == null || rows.length > 100) {
+    if (filters['p_form_id'] == null || rows.length > 100) {
       if (mounted) {
         notice(
           context,
@@ -883,12 +915,13 @@ class _CustomInboxPageState extends State<CustomInboxPage> {
           'custom-forms',
           body: {
             'action': 'export',
-            'form_id': formId,
+            'form_id': filters['p_form_id'],
             'format': 'zip',
             'submission_ids': rows.map((r) => r['id']).toList(),
           },
         )
         .timeout(const Duration(seconds: 60));
+    if (!mounted || widget.state.userId != identity) return;
     if (response.data is! List<int>) throw StateError('Invalid archive');
     await shareFormBytes(
       Uint8List.fromList(response.data as List<int>),
@@ -1349,6 +1382,27 @@ class _FormConversationPageState extends State<FormConversationPage> {
                   ),
                 ],
               ),
+            ActionTile(
+              icon: Icons.receipt_long_outlined,
+              title: 'Fees & payments',
+              subtitle: 'Charges, outstanding balances and receipts',
+              onTap: () => showPrivatePage(
+                context,
+                widget.state,
+                FeeLedgerPage(
+                  widget.state,
+                  formId: widget.submissionId,
+                  canManage: staff,
+                ),
+              ),
+            ),
+            if (custom && staff)
+              FormEmailPanel(
+                widget.state,
+                submissionId: widget.submissionId,
+                initialRecipient: '${payload['email'] ?? ''}',
+                onChanged: reload,
+              ),
             if (payload['email'] is String)
               TextButton(
                 onPressed: () => openLink(
@@ -1375,7 +1429,9 @@ class _FormConversationPageState extends State<FormConversationPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${message['internal'] == true
+                          '${message['author_kind'] == 'email'
+                              ? 'Email reply — sender not verified'
+                              : message['internal'] == true
                               ? 'Staff note'
                               : message['author_id'] == widget.state.userId
                               ? 'You'

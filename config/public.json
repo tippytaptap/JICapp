@@ -1,0 +1,6 @@
+{
+  "SUPABASE_URL": "https://pwhtguaevhlnzytneemp.supabase.co",
+  "SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3aHRndWFldmhsbnp5dG5lZW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5MDIxMzgsImV4cCI6MjEwNDQ3ODEzOH0.Qv4hcVXAdJe3yponYYLJktSDIdl9jI4bW-RLo3Ag9bI",
+  "ENABLE_EXTENSIONS": false,
+  "ENABLE_PUSH": false
+}

@@ -22,8 +22,8 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test --timeout 30s
-      - run: flutter build web --no-web-resources-cdn --no-tree-shake-icons
-      - run: flutter build apk --debug
+      - run: flutter build web --no-web-resources-cdn --no-tree-shake-icons --dart-define-from-file=config/public.json
+      - run: flutter build apk --debug --dart-define-from-file=config/public.json
       - name: Build Wear OS
         run: cd android && ./gradlew :wear:assembleDebug
       - uses: actions/upload-artifact@v4
@@ -45,6 +45,9 @@ jobs:
           git clone --depth 1 --branch 3.47.4 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
       - run: flutter pub get
-      - run: flutter build ios --simulator --debug
+      - name: Build iPhone and embedded watch simulator apps
+        run: |
+          simulator_id="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; devices=json.load(sys.stdin)["devices"]; print(next(d["udid"] for runtime, rows in devices.items() if ".iOS-" in runtime for d in rows if d.get("isAvailable") and d["name"].startswith("iPhone")))')"
+          flutter build ios --simulator --debug --no-codesign -d "$simulator_id" --dart-define-from-file=config/public.json
       - name: Build Apple Watch simulator
         run: xcodebuild -project ios/Runner.xcodeproj -scheme CommunityWatch -configuration Debug -sdk watchsimulator -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO build

@@ -29,7 +29,9 @@ class _SermonArchivePageState extends State<SermonArchivePage> {
   Future<List<Record>> load() async {
     final client = widget.state.client;
     if (client == null) return [];
-    var result = client.from('sermon_publications').select('id,title,speaker,summary,published_at');
+    var result = client
+        .from('sermon_publications')
+        .select('id,title,speaker,summary,published_at');
     if (query.isNotEmpty) {
       final escaped = query.replaceAllMapped(
         RegExp(r'[%_\\]'),
@@ -113,10 +115,23 @@ class _SermonArchivePageState extends State<SermonArchivePage> {
                       subtitle: '${talk['speaker']}',
                       onTap: () async {
                         try {
-                          final detail = await widget.state.client!.from('sermon_publications').select(sermonFields).eq('id', talk['id']).single().timeout(const Duration(seconds: 20));
-                          if (context.mounted) showPage(context, SermonPage(widget.state, widget.radio, detail));
+                          final detail = await widget.state.client!
+                              .from('sermon_publications')
+                              .select(sermonFields)
+                              .eq('id', talk['id'])
+                              .single()
+                              .timeout(const Duration(seconds: 20));
+                          if (context.mounted)
+                            showPage(
+                              context,
+                              SermonPage(widget.state, widget.radio, detail),
+                            );
                         } catch (_) {
-                          if (context.mounted) notice(context, 'This talk is unavailable. Please refresh.');
+                          if (context.mounted)
+                            notice(
+                              context,
+                              'This talk is unavailable. Please refresh.',
+                            );
                         }
                       },
                     ),
@@ -206,8 +221,7 @@ class _SermonPageState extends State<SermonPage> {
             listenable: widget.radio,
             builder: (context, _) {
               final mine =
-                  audioUrl != null &&
-                  widget.radio.sourceUrl == audioUrl;
+                  audioUrl != null && widget.radio.sourceUrl == audioUrl;
               return Wrap(
                 spacing: 8,
                 children: [

@@ -46,6 +46,21 @@ class AppState extends ChangeNotifier {
       jsonDecode(await rootBundle.loadString('assets/programmes.json')),
     );
     programmes = defaults;
+    try {
+      final cached = preferences.getString('public.prayerDays');
+      if (cached != null) {
+        prayers = records(jsonDecode(cached))
+            .where(
+              (day) =>
+                  day['d_date'] is String &&
+                  '${day['d_date']}'.compareTo(today) >= 0,
+            )
+            .take(8)
+            .toList();
+      }
+    } catch (_) {
+      prayers = [];
+    }
     await notifications.initialise();
     _observedAuthUser = userId;
     _auth = client?.auth.onAuthStateChange.listen((event) {
@@ -224,6 +239,9 @@ class AppState extends ChangeNotifier {
     } catch (_) {
       // Widget configuration must not prevent the in-app timetable loading.
     }
+    try {
+      await preferences.setString('public.prayerDays', jsonEncode(prayers));
+    } catch (_) {}
     unawaited(notifications.refreshPrayerSchedule(prayers));
     notifyListeners();
   }

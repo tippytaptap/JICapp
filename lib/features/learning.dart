@@ -3,6 +3,7 @@ import '../core/app_state.dart';
 import '../core/models.dart';
 import '../widgets/common.dart';
 import 'learning_resources.dart';
+import 'fees.dart';
 import 'workspace.dart';
 
 const _requestTimeout = Duration(seconds: 20);
@@ -681,6 +682,21 @@ class _StudentPage extends StatelessWidget {
             context,
             state,
             _RecordsPage(state, courseId, student, teacher),
+          ),
+        ),
+        ActionTile(
+          icon: Icons.receipt_long_outlined,
+          title: 'Fees and payments',
+          subtitle: 'Amounts due and recorded payments',
+          onTap: () => showPrivatePage(
+            context,
+            state,
+            FeeLedgerPage(
+              state,
+              studentId: '${student['id']}',
+              courseId: courseId,
+              canManage: teacher,
+            ),
           ),
         ),
         ActionTile(
