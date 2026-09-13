@@ -1,10 +1,10 @@
 # Reviewable rollout package
 
-The app feature branch and website PR5 contain the same shared contracts. Website main through668b194 is integrated. Do not publish a Flutter web build over the React website.
+The app feature branch and website PR5 contain the same shared contracts. Website main through `876e8fa` is integrated. Do not publish a Flutter web build over the React website.
 
 ## Database and services
 
-The connected JIC website project is `pwhtguaevhlnzytneemp` (London). Its existing live migrations stop at `20260912121025_saved_stream_settings`; no new workspace data exists there yet. The source additions, in order:
+The connected JIC website project is `pwhtguaevhlnzytneemp` (London). The latest existing live migration is `20260913114724_team_member_groups`, applied by the current website update; no new app workspace tables exist there yet. The website branch aligns that team migration filename with the verified live history. The source additions, in order:
 
 1. `20260913100552_community_workspace.sql` — scoped learning, tasks, notifications, device registration/outbox and legacy form routing.
 2. `20260913111401_custom_forms.sql` — versioned custom fields, private uploads, membership, replies and collated inbox.
@@ -13,7 +13,7 @@ The connected JIC website project is `pwhtguaevhlnzytneemp` (London). Its existi
 5. `20260913113124_fee_ledger.sql` — source-scoped fees, immutable receipt/audit records and provider reconciliation.
 6. `20260913113136_optional_form_email.sql` — optional reviewed email delivery and quarantined replies.
 
-SQL tests apply this exact order together. They check anonymous/ordinary/teacher/guardian/owner/revoked access and transactional duplicate protections. These tests use PGlite; managed Storage, Auth and HTTP gateways still require post-deployment checks.
+SQL tests apply this exact order together, plus the separate existing team update. The new workspace versions predate that latest team migration: a linked CLI rollout must review `supabase db push --dry-run --include-all` before applying the approved pending migrations. They check anonymous/ordinary/teacher/guardian/owner/revoked access and transactional duplicate protections. These tests use PGlite; managed Storage, Auth and HTTP gateways still require post-deployment checks.
 
 New Edge Functions: `custom-forms`, `push-worker`, `payment-webhook`. Deploy the existing `manage-user` function with the updated shared access catalog so new form capability keys can be assigned. Keep existing `submit-form` and TV contracts; no replacement account database. Apply `verify_jwt` settings from the companion config; handlers perform explicit current-user or dedicated worker/provider authentication.
 

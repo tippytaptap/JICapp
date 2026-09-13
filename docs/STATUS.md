@@ -1,6 +1,6 @@
 # Completion and release status — 13 September 2026
 
-The app and shared website source are saved to GitHub in `tippytaptap/JICapp` (`feat/complete-app`) and `jicuser/website` (`feat/community-workspace`, PR5). The current website main UI changes are merged into the companion branch. The live Supabase project still has its existing website schema; the new workspace migrations have not been deployed.
+The app and shared website source are saved to GitHub in `tippytaptap/JICapp` (`main`; development history in `feat/complete-app`) and `jicuser/website` (`feat/community-workspace`, PR5). The current website main UI changes are merged into the companion branch. The live Supabase project still has its existing website schema; the new workspace migrations have not been deployed.
 
 ## Implemented
 
@@ -24,10 +24,11 @@ The app and shared website source are saved to GitHub in `tippytaptap/JICapp` (`
 ## Source verification
 
 - First full native checkpoint `9e70a7b`: Flutter analysis/tests/web, Android phone APK and Wear OS APK passed in GitHub run34754702602. Apple initially required an explicit simulator ID; that workflow requirement was corrected.
-- Website: all265 tests, ESLint and workspace-enabled Vite production build passed after integrating current main. Targeted form flows also passed real mobile browser tests with mocked writes.
+- Website: all 269 tests, ESLint and workspace-enabled Vite production build passed after integrating current main through `876e8fa`. Targeted form flows also passed real mobile browser tests with mocked writes.
 - Actual SQL tests apply all six current workspace migrations together and check role isolation, file visibility, transactions, receipt idempotency and shared replies/email queue.
 - Provider code uses mocks/synthetic audio for verification. Real FFmpeg conversion was exercised; no real sermon recording, email, payment or paid AI request was initiated.
-- Final exact-head native/build results are recorded in the repository's latest CI run and the delivery message. Successful compilation is separate from signing, provider delivery and physical-device testing.
+- Final app analysis and 51 tests passed; the extensions-enabled web build and Home/Education/Reading/Tasbih browser smoke passed with no console errors.
+- Final source `03a8f024` passed Android phone/Wear OS APK builds, iPhone simulator with embedded watch, and standalone Apple Watch simulator in [run34755740646](https://github.com/tippytaptap/JICapp/actions/runs/34755740646). Both Android artifacts are uploaded. Successful compilation is separate from signing, provider delivery and physical-device testing.
 
 ## Release setup still required
 

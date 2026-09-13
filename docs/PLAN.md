@@ -4,7 +4,7 @@ Rebuild started 13 September 2026. Persist each source stage to GitHub before mo
 
 ## Architecture
 
-Flutter Android/iOS app; keep the React/Vite public website. One Supabase project provides accounts, capability checks, content, private form_submissions, education records, tasks and inbox. FCM delivers push from Supabase Edge Functions; it is not a second authentication database. Use generic feature names and organisation configuration. Current website main UI through668b194 is integrated in the companion branch.
+Flutter Android/iOS app; keep the React/Vite public website. One Supabase project provides accounts, capability checks, content, private form_submissions, education records, tasks and inbox. FCM delivers push from Supabase Edge Functions; it is not a second authentication database. Use generic feature names and organisation configuration. Current website main UI through876e8fa is integrated in the companion branch.
 
 ## Ordered checkpoints
 

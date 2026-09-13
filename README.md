@@ -4,7 +4,7 @@ A configurable Flutter app sharing the existing React/Vite website and Supabase 
 
 ## Run
 
-Flutter3.47.4 / Dart3.13.3. Android Studio Emulator for Android; Xcode Simulator on macOS for iPhone and Apple Watch.
+Flutter 3.47.4 / Dart 3.13.3. Android Studio Emulator for Android; Xcode Simulator on macOS for iPhone and Apple Watch.
 
 ```sh
 flutter pub get
@@ -20,7 +20,7 @@ The public build connects to the existing timetable/content/login/forms. Extende
 ## Features
 
 - Published prayers and reminders, events/announcements, approved images, adult programme posters and weekly schedule; separate adult/madrasah course spaces.
-- Quran114-surah reading/search, per-ayah bookmarks/position and explicit native offline downloads; approved Dalail/Hizb/hadith/dhikr collections with offline text; Tasbih goals/history/haptics and private encrypted Salah plans; on-demand Qibla.
+- Quran 114-surah reading/search, per-ayah bookmarks/position and explicit native offline downloads; approved Dalail/Hizb/hadith/dhikr collections with offline text; Tasbih goals/history/haptics and private encrypted Salah plans; on-demand Qibla.
 - Radio and sermon archive using one background media player, lock-screen controls and sleep settings; reviewed speech summaries, source-linked quotations and approved quote cards.
 - Shared accounts and owner/delegated user administration; custom conditional form builder, responsible people/watchers, photo/file uploads, replies, filtered collated inbox, CSV/ZIP and assigned actions.
 - Fee ledger with due/outstanding balances, audited manual receipts and corrections; optional verified payment webhook. Optional reviewed email dispatch and quarantined inbound replies complement push.
@@ -38,3 +38,5 @@ Deploy/test the companion migrations before setting `ENABLE_EXTENSIONS=true`; co
 ## Reuse
 
 Edit `assets/organisation.json`, replace branding and `config/public.json`, then set platform display names, bundle identifiers and App Groups for the chosen developer account. `com.mastir.community_app` is a development identifier. Use a separate backend for each organisation; the code does not provide shared-database multi-tenant isolation.
+
+Verified source `03a8f024`: all four native targets passed in [CI run34755740646](https://github.com/tippytaptap/JICapp/actions/runs/34755740646). Download `android-preview` for the phone APK or `wear-os-preview` for the watch APK. App analysis/51 tests and the shared website/269 tests passed. The preview uses existing public backend settings; new workspace and remote-push flags remain off pending the documented rollout.

@@ -46,7 +46,9 @@ Before a signed release, register these identifiers under the chosen developer a
 
 ## Validation
 
-Locally verified: Dart analysis, three transport/handoff tests, Xcode project graph and plist/scheme parsing. Android phone and Wear OS debug APKs compiled successfully in GitHub Actions run 34754702602 at commit 9e70a7b; both artifacts were uploaded. The initial Apple job stopped before compilation because Flutter requires an explicit simulator device ID when a watch companion is embedded. The workflow now selects an available iPhone simulator; its next macOS result remains pending. This Linux workspace cannot claim an Apple device test or store-ready signing. Physical paired-device checks remain necessary for delivery after disconnection, watch replacement, foreground compass calibration, haptic feel, complication refresh and small/round displays.
+Locally verified: Dart analysis, three transport/handoff tests, Kotlin parsing/formatting, and Xcode project graph/plist/scheme parsing. All native targets compiled successfully from final application commit `03a8f024f3e48fe73d4508035dd195982d863285` in [GitHub Actions run 34755740646](https://github.com/tippytaptap/JICapp/actions/runs/34755740646): Android phone APK, Wear OS APK, iPhone simulator with embedded watch app, and standalone Apple Watch simulator app. The Android and Wear preview artifacts were uploaded by that run.
+
+Physical paired-device checks remain necessary for delivery after disconnection, watch replacement, compass calibration, haptic feel, complication refresh and small/round displays. Simulator compilation does not provide App Store signing or physical watch validation.
 
 ## Official references
 
