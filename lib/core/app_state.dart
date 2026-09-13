@@ -6,12 +6,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'models.dart';
+import 'widget_service.dart';
+import 'notification_service.dart';
 
 class AppState extends ChangeNotifier {
   final Organisation organisation;
   final SupabaseClient? client;
   final SharedPreferences preferences;
   AppState(this.organisation, this.client, this.preferences);
+  late final notifications = NotificationService(
+    organisation,
+    client,
+    preferences,
+  );
   Record? profile;
   bool profileLoading = false, loading = true, stale = false;
   List<Record> programmes = [],
@@ -24,6 +31,7 @@ class AppState extends ChangeNotifier {
   StreamSubscription<AuthState>? _auth;
   int _authGeneration = 0;
   bool _refreshing = false;
+  String? _observedAuthUser;
   bool get dark => preferences.getBool('dark') ?? false;
   String? get userId => client?.auth.currentUser?.id;
   String get today => dateKey(centreNow(organisation.timeZone));
@@ -34,7 +42,14 @@ class AppState extends ChangeNotifier {
       jsonDecode(await rootBundle.loadString('assets/programmes.json')),
     );
     programmes = defaults;
+    await notifications.initialise();
+    _observedAuthUser = userId;
     _auth = client?.auth.onAuthStateChange.listen((event) {
+      if (_observedAuthUser != event.session?.user.id ||
+          event.session == null) {
+        unawaited(notifications.syncAccount(activeAccount: false));
+      }
+      _observedAuthUser = event.session?.user.id;
       final generation = ++_authGeneration;
       profile = null;
       profileLoading = event.session != null;
@@ -73,6 +88,7 @@ class AppState extends ChangeNotifier {
     }
     if (current == _authGeneration) {
       profileLoading = false;
+      unawaited(notifications.syncAccount(activeAccount: active(profile)));
       notifyListeners();
     }
   }
@@ -196,6 +212,12 @@ class AppState extends ChangeNotifier {
     }
     loading = false;
     _refreshing = false;
+    try {
+      await PrayerWidgetService.update(organisation, prayers);
+    } catch (_) {
+      // Widget configuration must not prevent the in-app timetable loading.
+    }
+    unawaited(notifications.refreshPrayerSchedule(prayers));
     notifyListeners();
   }
 
@@ -213,6 +235,7 @@ class AppState extends ChangeNotifier {
   @override
   void dispose() {
     _auth?.cancel();
+    notifications.dispose();
     super.dispose();
   }
 }

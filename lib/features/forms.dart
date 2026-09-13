@@ -107,7 +107,8 @@ class _EnquiryPageState extends State<EnquiryPage> {
                             'submit-form',
                             body: {'kind': widget.kind, 'payload': payload},
                           );
-                      if (response.data is! Map || response.data['ok'] != true) {
+                      if (response.data is! Map ||
+                          response.data['ok'] != true) {
                         throw StateError('Not saved');
                       }
                       if (mounted) setState(() => sent = true);
@@ -142,11 +143,14 @@ class _FormsPageState extends State<FormsPage> {
     return records(
       await query
           .order('created_at', ascending: false)
-          .range(page * 25, page * 25 + 24),
+          .range(page * 25, page * 25 + 24)
+          .timeout(const Duration(seconds: 20)),
     );
   }
 
-  void reload() => setState(() => request = load());
+  void reload() => setState(() {
+    request = load();
+  });
   @override
   Widget build(BuildContext context) => ContentPage(
     title: 'Forms inbox',
@@ -227,7 +231,8 @@ class _FormsPageState extends State<FormsPage> {
                   ),
                 );
               }
-              if (!snapshot.hasData) {
+              if (snapshot.connectionState != ConnectionState.done ||
+                  !snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
               final all = snapshot.data!;
@@ -339,7 +344,8 @@ class _FormsPageState extends State<FormsPage> {
                                   })
                                   .eq('id', r['id'])
                                   .select('id')
-                                  .single();
+                                  .single()
+                                  .timeout(const Duration(seconds: 20));
                               reload();
                             },
                           ),

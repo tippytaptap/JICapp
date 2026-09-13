@@ -24,7 +24,13 @@ An unconfigured build is a public preview with bundled posters. It does not inve
 
 Home and published prayer times, adult courses and weekly schedule, Qur’an Arabic/English reader with font size/bookmark, referenced reading collections, persistent Tasbih, private device Salah record, on-demand Qibla, radio media-session/sleep controls, same-account login, native contact/madrasah enquiry, private paginated forms inbox and CSV/share/call/email-draft actions.
 
-Shared task/learning/notification extensions and native widgets are being added in later checkpoints. `docs/PLAN.md` tracks the full scope. `docs/RECOVERY.md` records the earlier lost working copy; its test results must not be mistaken for validation of this code.
+The optional shared workspace adds form-linked tasks, deadlines, status totals, a separate updates inbox, course registers, progress/plans/assessments, meetings and moderated student poetry/reflections. Website owners configure courses, enrolments, teaching assignments and automatic form routing. Student and staff access uses server row-level security.
+
+Android prayer widgets and the embedded iOS WidgetKit target share only published prayer times and open prayer/Tasbih views. Notification settings provide explicit per-account FCM consent and local prayer reminders from the published timetable. See `docs/NOTIFICATIONS.md` and `docs/WIDGETS.md` for setup and physical-device checks.
+
+Apply and test the companion website migration before enabling `ENABLE_EXTENSIONS`; enable `ENABLE_PUSH` only after Firebase/APNs setup. The companion source is on `jicuser/website` branch `feat/community-workspace`, with its API contract in `docs/community-workspace-api.md`. No production database changes or push delivery were performed by this source change.
+
+`docs/PLAN.md` retains the full scope and `docs/STATUS.md` distinguishes implemented source from remaining work. `docs/RECOVERY.md` records the earlier lost working copy; its test results must not be mistaken for validation of this code.
 
 Native radio/notifications/location need physical-device testing. Store signing and Firebase/APNs setup are not complete. The CI workflow attempts a debug Android build and produces an artifact only if successful; its preview build has no production connection settings.
 

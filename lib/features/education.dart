@@ -78,7 +78,7 @@ class _EducationViewState extends State<EducationView> {
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
                           child: Text(
-                            '${s['title']}\n${s['relativeTo'] == 'maghrib' ? 'After Maghrib · see the prayer timetable' : displayTime(s['time'])}',
+                            '${s['title']}\n${s['after'] != null ? 'After ${s['after']} · see the prayer timetable' : displayTime(s['time'])}',
                           ),
                         ),
                     ],

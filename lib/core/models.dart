@@ -49,6 +49,10 @@ bool safeWebUrl(String value) {
 }
 
 bool adultProgramme(Record p) {
+  if (p['kind'] == 'announcement' ||
+      !(p['groups'] is List && (p['groups'] as List).contains('education'))) {
+    return false;
+  }
   if (p['audience'] != null) return ['adult', 'all'].contains(p['audience']);
   final groups = List<String>.from(p['groups'] ?? []);
   return groups.contains('education') &&
@@ -63,12 +67,21 @@ List<Record> weeklySessions(List<Record> programmes) => [
           s['day'] >= 1 &&
           s['day'] <= 7 &&
           (RegExp(r'^(?:[01]\d|2[0-3]):[0-5]\d$').hasMatch('${s['time']}') ||
+              prayerNames.values.contains(s['after']) ||
               s['relativeTo'] == 'maghrib'))
-        {...s, 'title': s['label'] ?? p['title'], 'programmeId': p['id']},
+        {
+          ...s,
+          'after':
+              s['after'] ?? (s['relativeTo'] == 'maghrib' ? 'Maghrib' : null),
+          'title': s['title'] ?? s['label'] ?? p['title'],
+          'programmeId': p['id'],
+        },
 ]..sort((a, b) => (a['day'] as int).compareTo(b['day'] as int));
 
-tz.TZDateTime centreNow(String zone, [DateTime? now]) =>
-    tz.TZDateTime.from(now ?? DateTime.now(), zone == 'UTC' ? tz.UTC : tz.getLocation(zone));
+tz.TZDateTime centreNow(String zone, [DateTime? now]) => tz.TZDateTime.from(
+  now ?? DateTime.now(),
+  zone == 'UTC' ? tz.UTC : tz.getLocation(zone),
+);
 String dateKey(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
 tz.TZDateTime? prayerMoment(String date, dynamic value, String zone) {
   final match = RegExp(
@@ -79,7 +92,9 @@ tz.TZDateTime? prayerMoment(String date, dynamic value, String zone) {
   if (match == null || day == null || dateKey(day) != date) return null;
   var hour = int.parse(match[1]!);
   final minute = int.parse(match[2]!);
-  if (minute > 59 || hour > 23 || (match[3] != null && (hour < 1 || hour > 12))) {
+  if (minute > 59 ||
+      hour > 23 ||
+      (match[3] != null && (hour < 1 || hour > 12))) {
     return null;
   }
   if (match[3] != null) {

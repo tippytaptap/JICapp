@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/app_state.dart';
+import '../core/config.dart';
 import '../core/models.dart';
 import '../widgets/common.dart';
 import 'forms.dart';
+import 'notification_settings.dart';
+import 'workspace.dart';
+import 'learning.dart';
 
 class AccountGate extends StatelessWidget {
   final AppState state;
@@ -46,7 +50,14 @@ class AccountGate extends StatelessWidget {
           ),
         );
       }
-      return KeyedSubtree(key: ValueKey(state.userId), child: child);
+      final permissions = List<String>.from(state.profile?['permissions'] ?? [])
+        ..sort();
+      return KeyedSubtree(
+        key: ValueKey(
+          '${state.userId}/${state.profile?['is_owner']}/${permissions.join(',')}',
+        ),
+        child: child,
+      );
     },
   );
 }
@@ -139,16 +150,41 @@ class _AccountViewState extends State<AccountView> {
                 icon: Icons.inbox_outlined,
                 title: 'Forms inbox',
                 subtitle: 'Enquiries and registrations you can manage',
-                onTap: () =>
-                    showPage(context, AccountGate(s, child: FormsPage(s))),
+                onTap: () => showPrivatePage(
+                  context,
+                  s,
+                  FormsPage(
+                    s,
+                    assign: extensionsEnabled
+                        ? (form) => showPrivatePage(
+                            context,
+                            s,
+                            CreateTaskPage(s, form: form),
+                          )
+                        : null,
+                  ),
+                ),
               ),
-            ActionTile(
-              icon: Icons.school_outlined,
-              title: 'Student & staff portal',
-              subtitle: 'Courses, progress and class registers',
-              onTap: () =>
-                  openLink(context, '${s.organisation.website}/portal'),
-            ),
+            if (extensionsEnabled) ...[
+              ActionTile(
+                icon: Icons.task_alt,
+                title: 'Tasks',
+                subtitle: 'Your actions, deadlines and outstanding work',
+                onTap: () => showPrivatePage(context, s, TasksPage(s)),
+              ),
+              ActionTile(
+                icon: Icons.notifications_outlined,
+                title: 'Updates',
+                subtitle: 'Task and learning notifications',
+                onTap: () => showPrivatePage(context, s, UpdatesPage(s)),
+              ),
+              ActionTile(
+                icon: Icons.school_outlined,
+                title: 'Student & staff portal',
+                subtitle: 'Courses, progress and class registers',
+                onTap: () => showPrivatePage(context, s, LearningPage(s)),
+              ),
+            ],
             if (owner(s.profile) || can(s.profile, 'users'))
               ActionTile(
                 icon: Icons.manage_accounts_outlined,
@@ -162,12 +198,25 @@ class _AccountViewState extends State<AccountView> {
           AsyncButton(
             label: 'Sign out',
             onPressed: () async {
+              await s.notifications.prepareForSignOut();
               await s.client!.auth.signOut(scope: SignOutScope.local);
               await s.refreshProfile();
+              if (context.mounted && s.notifications.error != null) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(s.notifications.error!)));
+              }
             },
           ),
         ],
         const SectionTitle('Preferences'),
+        ActionTile(
+          icon: Icons.notifications_active_outlined,
+          title: 'Notifications & prayer reminders',
+          subtitle: 'Choose which updates reach your phone',
+          onTap: () =>
+              showPage(context, NotificationSettingsPage(s, s.notifications)),
+        ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Dark appearance'),

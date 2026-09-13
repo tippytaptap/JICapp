@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@drawable/widget_background" android:orientation="vertical" android:padding="16dp">
+    <TextView android:id="@+id/widget_organisation" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Prayer times" android:textColor="#D4BC83" android:textSize="12sp" android:maxLines="1" android:ellipsize="end" />
+    <TextView android:id="@+id/widget_prayer" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Next prayer" android:textColor="#F5F1E9" android:textSize="18sp" android:textStyle="bold" android:maxLines="1" />
+    <TextView android:id="@+id/widget_time" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Open app to refresh" android:textColor="#FFFFFF" android:textSize="24sp" android:maxLines="1" android:ellipsize="end" />
+    <TextView android:id="@+id/widget_date" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="" android:textColor="#D4D5D9" android:textSize="12sp" />
+    <TextView android:id="@+id/widget_tasbih" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="6dp" android:minHeight="36dp" android:gravity="center_vertical"
+        android:text="Open Tasbih ›" android:contentDescription="Open Tasbih counter" android:textColor="#D4BC83" android:textSize="14sp" />
+</LinearLayout>

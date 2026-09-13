@@ -9,12 +9,14 @@ import 'core/app_state.dart';
 import 'core/config.dart';
 import 'core/local_store.dart';
 import 'core/radio_controller.dart';
+import 'core/widget_service.dart';
 import 'features/account.dart';
 import 'features/education.dart';
 import 'features/home.dart';
 import 'features/radio.dart';
 import 'features/reading.dart';
 import 'features/tasbih.dart';
+import 'features/workspace.dart';
 import 'widgets/common.dart';
 
 Future<void> main() async {
@@ -118,11 +120,38 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int tab = 0;
   Timer? timer;
+  StreamSubscription<Uri?>? widgetLinks;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    widgetLinks = PrayerWidgetService.links.listen(openWidgetLink);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      widget.state.notifications.onOpenInbox = () {
+        if (!mounted) return;
+        setState(() => tab = 3);
+        showPrivatePage(context, widget.state, UpdatesPage(widget.state));
+      };
+      widget.state.notifications.onOpenPrayers = () {
+        if (mounted) setState(() => tab = 0);
+      };
+      widget.state.notifications.dispatchPendingOpen();
+      try {
+        openWidgetLink(await PrayerWidgetService.initialLink());
+      } catch (_) {
+        // An unavailable extension does not stop the main app opening.
+      }
+    });
     startTimer();
+  }
+
+  void openWidgetLink(Uri? uri) {
+    if (!mounted || uri?.scheme != 'community') return;
+    if (uri!.host == 'tasbih') {
+      showPage(context, TasbihPage(widget.state.preferences));
+    } else if (uri.host == 'prayers') {
+      setState(() => tab = 0);
+    }
   }
 
   void startTimer() {
@@ -147,6 +176,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   @override
   void dispose() {
     timer?.cancel();
+    widgetLinks?.cancel();
+    widget.state.notifications.onOpenInbox = null;
+    widget.state.notifications.onOpenPrayers = null;
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -160,8 +192,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           width: 150,
           height: 48,
           child: ContentImage(
-            s.image(s.branding[s.dark ? 'headerLight' : 'headerDark']) ??
-                'assets/brand/wordmark-${s.dark ? 'light' : 'dark'}.png',
+            s.image(s.branding[s.dark ? 'headerDark' : 'headerLight']) ??
+                'assets/brand/wordmark-${s.dark ? 'dark' : 'light'}.png',
             fit: BoxFit.contain,
           ),
         ),

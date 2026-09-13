@@ -50,6 +50,7 @@ class ReadingView extends StatelessWidget {
         'dalail': ['Dala’il al-Khayrat', 'Daily salawat and reading'],
         'dhikr': ['Dhikr & du‘as', 'Morning, evening and everyday remembrance'],
         'hadith': ['Hadith', 'Collections with references'],
+        'hizb': ['Awrad & Hizb', 'Regular litanies from your centre'],
         'guides': ['Prayer & learning guides', 'Resources from your centre'],
       }.entries)
         ActionTile(
@@ -114,9 +115,9 @@ class LibraryPage extends StatelessWidget {
                           style: const TextStyle(fontSize: 28, height: 1.9),
                         ),
                       ),
-                    if ('${entry['body'] ?? ''}'.isNotEmpty)
+                    if ('${entry['text'] ?? entry['body'] ?? ''}'.isNotEmpty)
                       SelectableText(
-                        entry['body'],
+                        '${entry['text'] ?? entry['body']}',
                         style: const TextStyle(height: 1.7),
                       ),
                     if ('${entry['reference'] ?? ''}'.isNotEmpty)
@@ -124,9 +125,12 @@ class LibraryPage extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 16),
                         child: Text('Reference: ${entry['reference']}'),
                       ),
-                    if (safeWebUrl('${entry['url']}'))
+                    if (safeWebUrl('${entry['source'] ?? entry['url']}'))
                       TextButton(
-                        onPressed: () => openLink(context, entry['url']),
+                        onPressed: () => openLink(
+                          context,
+                          '${entry['source'] ?? entry['url']}',
+                        ),
                         child: const Text('Open source'),
                       ),
                   ],
@@ -234,7 +238,9 @@ class _QuranPageState extends State<QuranPage> {
               if (snapshot.hasError) {
                 return Center(
                   child: TextButton(
-                    onPressed: () => setState(() => request = load()),
+                    onPressed: () => setState(() {
+                      request = load();
+                    }),
                     child: const Text('Could not load this surah. Retry'),
                   ),
                 );
