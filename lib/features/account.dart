@@ -12,7 +12,7 @@ import 'workspace.dart';
 import 'learning.dart';
 import 'learning_management.dart';
 
-class AccountGate extends StatelessWidget {
+class AccountGate extends StatefulWidget {
   final AppState state;
   final Widget child;
   final String? permission;
@@ -23,9 +23,59 @@ class AccountGate extends StatelessWidget {
     this.permission,
   });
   @override
+  State<AccountGate> createState() => _AccountGateState();
+}
+
+class _AccountGateState extends State<AccountGate> {
+  late final String? originalUser = widget.state.userId;
+  String? originalScope;
+  bool closed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = widget.state.profile;
+    if (profile != null) originalScope = scope(profile);
+  }
+
+  String scope(Record profile) {
+    final permissions = List<String>.from(profile['permissions'] ?? [])..sort();
+    return '${profile['is_owner']}/${permissions.join(',')}';
+  }
+
+  @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: state,
+    listenable: widget.state,
     builder: (context, _) {
+      final state = widget.state;
+      // Rebuilding a captured child with a new key does not remove private data
+      // stored in that widget's constructor. Close the whole route on a change.
+      if (originalUser == null || state.userId != originalUser) closed = true;
+      if (active(state.profile)) {
+        final current = scope(state.profile!);
+        originalScope ??= current;
+        if (current != originalScope) closed = true;
+      }
+      if (closed) {
+        return ContentPage(
+          title: 'Your account',
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                const Text(
+                  'Your account or access has changed. Open this area again from your account.',
+                ),
+                TextButton(
+                  onPressed: () =>
+                      Navigator.of(context).popUntil((r) => r.isFirst),
+                  child: const Text('Return to account'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
       if (state.profileLoading) {
         return const ContentPage(
           title: 'Your account',
@@ -33,7 +83,8 @@ class AccountGate extends StatelessWidget {
         );
       }
       if (!active(state.profile) ||
-          (permission != null && !can(state.profile, permission!))) {
+          (widget.permission != null &&
+              !can(state.profile, widget.permission!))) {
         return ContentPage(
           title: 'Your account',
           child: Padding(
@@ -53,14 +104,7 @@ class AccountGate extends StatelessWidget {
           ),
         );
       }
-      final permissions = List<String>.from(state.profile?['permissions'] ?? [])
-        ..sort();
-      return KeyedSubtree(
-        key: ValueKey(
-          '${state.userId}/${state.profile?['is_owner']}/${permissions.join(',')}',
-        ),
-        child: child,
-      );
+      return widget.child;
     },
   );
 }

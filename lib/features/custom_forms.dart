@@ -212,15 +212,30 @@ class _PublicFormsListState extends State<_PublicFormsList> {
   );
 }
 
-class CustomFormPage extends StatefulWidget {
+class CustomFormPage extends StatelessWidget {
   final AppState state;
   final String slug;
   const CustomFormPage(this.state, {super.key, required this.slug});
   @override
-  State<CustomFormPage> createState() => _CustomFormPageState();
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: state,
+    builder: (context, _) => _CustomFormBody(
+      state,
+      slug: slug,
+      key: ValueKey('${state.userId}/$slug'),
+    ),
+  );
 }
 
-class _CustomFormPageState extends State<CustomFormPage> {
+class _CustomFormBody extends StatefulWidget {
+  final AppState state;
+  final String slug;
+  const _CustomFormBody(this.state, {super.key, required this.slug});
+  @override
+  State<_CustomFormBody> createState() => _CustomFormPageState();
+}
+
+class _CustomFormPageState extends State<_CustomFormBody> {
   final key = GlobalKey<FormState>();
   Record answers = {}, uploaded = {};
   final attempt = formAttemptId();
@@ -228,6 +243,7 @@ class _CustomFormPageState extends State<CustomFormPage> {
   bool sent = false, busy = false;
   String? error, submissionId;
   String? submittingUser;
+  bool get currentAttempt => mounted && widget.state.userId == submittingUser;
   @override
   void initState() {
     super.initState();
@@ -257,7 +273,7 @@ class _CustomFormPageState extends State<CustomFormPage> {
           ? ['jpg', 'jpeg', 'png', 'webp']
           : uploadMime.keys.toList(),
     );
-    if (file == null || !mounted) return;
+    if (file == null || !currentAttempt) return;
     final declaredSize = file.lengthSync();
     final invalid = uploadError(
       file.name,
@@ -296,6 +312,7 @@ class _CustomFormPageState extends State<CustomFormPage> {
         'mime_type': mime,
         'size_bytes': bytes.length,
       });
+      if (!currentAttempt) return;
       await widget.state.client!.storage
           .from('form-attachments')
           .uploadBinaryToSignedUrl(
@@ -305,13 +322,14 @@ class _CustomFormPageState extends State<CustomFormPage> {
             FileOptions(contentType: mime),
           )
           .timeout(const Duration(seconds: 60));
+      if (!currentAttempt) return;
       final finished = await formsAction(widget.state, {
         'action': 'upload_finish',
         'upload_id': prepared['upload_id'],
         'upload_token': prepared['upload_token'],
       });
       if (finished['ok'] != true) throw StateError('Not uploaded');
-      if (mounted) {
+      if (currentAttempt) {
         setState(() {
           answers['${field['id']}'] = prepared['upload_id'];
           uploaded['${field['id']}'] = {
@@ -322,14 +340,14 @@ class _CustomFormPageState extends State<CustomFormPage> {
         });
       }
     } catch (_) {
-      if (mounted) {
+      if (currentAttempt) {
         setState(
           () =>
               error = 'The file could not be uploaded. Please choose it again.',
         );
       }
     } finally {
-      if (mounted) setState(() => busy = false);
+      if (currentAttempt) setState(() => busy = false);
     }
   }
 
@@ -362,7 +380,7 @@ class _CustomFormPageState extends State<CustomFormPage> {
         ],
       });
       if (result['ok'] != true) throw StateError('Not submitted');
-      if (mounted) {
+      if (currentAttempt) {
         setState(() {
           sent = true;
           submissionId = '${result['id']}';
@@ -371,7 +389,7 @@ class _CustomFormPageState extends State<CustomFormPage> {
         });
       }
     } on FunctionException catch (e) {
-      if (mounted) {
+      if (currentAttempt) {
         setState(
           () => error = e.status == 409
               ? 'This attempt was already used or the form has changed. Check My responses, then reopen the form if you need to send a new response.'
@@ -381,14 +399,14 @@ class _CustomFormPageState extends State<CustomFormPage> {
         );
       }
     } catch (_) {
-      if (mounted) {
+      if (currentAttempt) {
         setState(
           () => error =
               'Your response could not be sent. Your answers are still here; try again.',
         );
       }
     } finally {
-      if (mounted) setState(() => busy = false);
+      if (currentAttempt) setState(() => busy = false);
     }
   }
 
@@ -851,10 +869,11 @@ class _CustomInboxPageState extends State<CustomInboxPage> {
         );
       }
       totalBytes += utf8.encode(jsonEncode(result['rows'])).length;
-      if (totalBytes > 25 * 1024 * 1024)
+      if (totalBytes > 25 * 1024 * 1024) {
         throw StateError(
           'This export is too large for one file. Narrow the date or form filters.',
         );
+      }
       rows.addAll(records(result['rows']));
       if (rows.length >= (result['total'] as num? ?? 0) ||
           records(result['rows']).length < 100) {

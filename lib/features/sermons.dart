@@ -121,17 +121,19 @@ class _SermonArchivePageState extends State<SermonArchivePage> {
                               .eq('id', talk['id'])
                               .single()
                               .timeout(const Duration(seconds: 20));
-                          if (context.mounted)
+                          if (context.mounted) {
                             showPage(
                               context,
                               SermonPage(widget.state, widget.radio, detail),
                             );
+                          }
                         } catch (_) {
-                          if (context.mounted)
+                          if (context.mounted) {
                             notice(
                               context,
                               'This talk is unavailable. Please refresh.',
                             );
+                          }
                         }
                       },
                     ),

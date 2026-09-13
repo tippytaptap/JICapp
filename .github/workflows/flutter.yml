@@ -46,8 +46,10 @@ jobs:
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
       - run: flutter pub get
       - name: Build iPhone and embedded watch simulator apps
+        id: ios_build
         run: |
           simulator_id="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; devices=json.load(sys.stdin)["devices"]; print(next(d["udid"] for runtime, rows in devices.items() if ".iOS-" in runtime for d in rows if d.get("isAvailable") and d["name"].startswith("iPhone")))')"
           flutter build ios --simulator --debug --no-codesign -d "$simulator_id" --dart-define-from-file=config/public.json
       - name: Build Apple Watch simulator
+        if: ${{ !cancelled() && steps.ios_build.outcome != 'skipped' }}
         run: xcodebuild -project ios/Runner.xcodeproj -scheme CommunityWatch -configuration Debug -sdk watchsimulator -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO build

@@ -57,7 +57,7 @@ class PrayerTileService : TileService() {
         .addContent(line(cache?.optString("organisation", "Community") ?: "Community", 14f))
         .addContent(line(next?.optString("name") ?: "Prayer times", 22f))
         .addContent(line(time, 22f))
-        .addContent(line("Tap for Tasbih", 12f))
+        .addContent(line("Tap to open", 12f))
         .setModifiers(
           ModifiersBuilders.Modifiers.Builder()
             .setClickable(

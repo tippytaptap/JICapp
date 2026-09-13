@@ -8,6 +8,13 @@ import 'package:community_app/core/models.dart';
 import 'package:community_app/features/account.dart';
 import 'package:community_app/features/workspace.dart';
 
+class SignedInWorkspaceState extends AppState {
+  SignedInWorkspaceState(SharedPreferences preferences)
+      : super(Organisation({'website': 'https://example.org'}), null, preferences);
+  @override
+  String get userId => 'workspace-account';
+}
+
 void main() {
   testWidgets('Reading an update does not open or complete its task', (
     tester,
@@ -44,11 +51,7 @@ void main() {
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
-    final state = AppState(
-      Organisation({'website': 'https://example.org'}),
-      null,
-      await SharedPreferences.getInstance(),
-    );
+    final state = SignedInWorkspaceState(await SharedPreferences.getInstance());
     state.profile = {'is_active': true, 'is_owner': true};
     await tester.pumpWidget(
       MaterialApp(

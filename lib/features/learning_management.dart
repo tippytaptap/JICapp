@@ -415,7 +415,9 @@ class _CourseManagementPageState extends State<CourseManagementPage> {
                         context,
                         widget.state,
                       );
-                      if (person == null || !mounted) return;
+                      if (person == null || !mounted || !context.mounted) {
+                        return;
+                      }
                       if (records(
                         snapshot.data!['staff'],
                       ).any((member) => member['user_id'] == person['id'])) {
@@ -472,7 +474,9 @@ class _CourseManagementPageState extends State<CourseManagementPage> {
                         widget.state,
                         student: true,
                       );
-                      if (person == null || !mounted) return;
+                      if (person == null || !mounted || !context.mounted) {
+                        return;
+                      }
                       await widget.state.client!
                           .from('learning_enrolments')
                           .upsert({
@@ -559,7 +563,7 @@ class _StudentManagementPageState extends State<StudentManagementPage> {
 
   Future<void> addGuardian() async {
     final person = await chooseLearningPerson(context, widget.state);
-    if (person == null || !mounted) return;
+    if (person == null || !mounted || !context.mounted) return;
     final relationship = TextEditingController(text: 'Guardian');
     final value = await showDialog<String>(
       context: context,
@@ -819,7 +823,7 @@ class _DepartmentHeadsPanelState extends State<DepartmentHeadsPanel> {
         onPressed: () async {
           final selectedDepartment = department;
           final person = await chooseLearningPerson(context, widget.state);
-          if (person == null || !mounted) return;
+          if (person == null || !mounted || !context.mounted) return;
           await widget.state.client!
               .from('learning_department_heads')
               .insert({

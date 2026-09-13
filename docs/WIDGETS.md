@@ -6,8 +6,8 @@ Native source is included for Android and iOS. Widgets show the next published *
 | --- | --- | --- |
 | Android | Home-screen widget, prayer link, Tasbih link, OS-scheduled updates from cached times | Emulator/device build, launcher sizing, reboot, battery saver, tap routing |
 | iOS 16+ | WidgetKit extension and target: small/medium home-screen and inline/circular/rectangular lock-screen families | Xcode build, signing, App Group registration, simulator/device timeline and tap routing |
-| Apple Watch | Planned: next prayer complication, reminders, Tasbih with haptics, Qibla where sensors support it | Watch app and target are not implemented |
-| Wear OS | Planned: next prayer tile/complication, Tasbih and reminders | Watch app and target are not implemented |
+| Apple Watch | Native CommunityWatch app and WatchWidgets complication; Tasbih, public timetable and Qibla | See WATCHES.md and current Apple CI; physical pairing/signing remain |
+| Wear OS | Native app, next-prayer Tile, Tasbih and Qibla | APK build passed; physical pairing and sensors remain |
 
 Android lock-screen placement depends on the OS and device launcher. Declaring the `keyguard` category does not make it available on every phone. Apple Watch support is a separate native deliverable; an iPhone lock-screen widget is not a watch app.
 

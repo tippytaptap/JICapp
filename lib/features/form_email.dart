@@ -12,16 +12,20 @@ String? emailDraftError(
   bool acknowledged,
 ) {
   if (recipient.length > 254 ||
-      !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(recipient))
+      !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(recipient)) {
     return 'Enter a valid recipient email.';
+  }
   if (subject.trim().isEmpty ||
       subject.length > 160 ||
-      subject.contains(RegExp(r'[\r\n]')))
+      subject.contains(RegExp(r'[\r\n]'))) {
     return 'Add a subject of 1–160 characters on one line.';
-  if (body.trim().isEmpty || body.length > 6000)
+  }
+  if (body.trim().isEmpty || body.length > 6000) {
     return 'Add a message of 1–6000 characters.';
-  if (!acknowledged)
+  }
+  if (!acknowledged) {
     return 'Confirm that you checked the recipient and message.';
+  }
   return null;
 }
 
@@ -84,13 +88,15 @@ class _FormEmailPanelState extends State<FormEmailPanel> {
       FutureBuilder<Record>(
         future: request,
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done)
+          if (snapshot.connectionState != ConnectionState.done) {
             return const LinearProgressIndicator();
-          if (snapshot.hasError)
+          }
+          if (snapshot.hasError) {
             return TextButton(
               onPressed: () => setState(() => request = load()),
               child: const Text('Email service unavailable. Check again'),
             );
+          }
           final data = snapshot.data!;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -244,8 +250,9 @@ class _FormEmailComposerState extends State<FormEmailComposer> {
     }
     final signature =
         '${recipient.text.trim()}\u0000${subject.text.trim()}\u0000${body.text.trim()}';
-    if (attemptedSignature != null && attemptedSignature != signature)
+    if (attemptedSignature != null && attemptedSignature != signature) {
       attempt = formAttemptId();
+    }
     attemptedSignature = signature;
     setState(() {
       error = null;
@@ -274,11 +281,12 @@ class _FormEmailComposerState extends State<FormEmailComposer> {
         Navigator.pop(context);
       }
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => error =
               'Email was not confirmed. Check the outgoing queue, then retry the same draft if needed.',
         );
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -325,7 +333,9 @@ class _FormEmailComposerState extends State<FormEmailComposer> {
         ),
         CheckboxListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('I checked the recipient address and message'),
+          title: const Text(
+            'I checked the address and message, and have permission to contact this person',
+          ),
           value: acknowledged,
           onChanged: busy
               ? null

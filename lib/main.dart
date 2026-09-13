@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -22,6 +23,11 @@ import 'widgets/common.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   timezone.initializeTimeZones();
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks([
+      'Noto Naskh Arabic',
+    ], await rootBundle.loadString('assets/fonts/NotoNaskhArabic-OFL.txt'));
+  });
   final organisation = await Organisation.load();
   SupabaseClient? client;
   if (backendUrl.isNotEmpty && backendKey.isNotEmpty) {
@@ -63,6 +69,7 @@ class CommunityApp extends StatelessWidget {
       surface: dark ? const Color(0xff142337) : const Color(0xfffaf8f3),
     );
     return ThemeData(
+      fontFamilyFallback: const ['NotoNaskhArabic'],
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: dark

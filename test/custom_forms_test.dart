@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +12,7 @@ import 'package:community_app/features/account.dart';
 import 'package:community_app/features/custom_forms.dart';
 import 'package:community_app/features/user_management.dart';
 import 'package:community_app/features/learning_management.dart';
+import 'package:community_app/features/form_email.dart';
 
 void main() {
   test('Hidden answers are omitted and visible numeric answers are typed', () {
@@ -306,4 +311,166 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     state.dispose();
   });
+  testWidgets(
+    'Published form submits typed visible answers to the shared service',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      Record? submitted;
+      final httpClient = MockClient((request) async {
+        if (request.url.path.endsWith('/rpc/get_public_form')) {
+          return http.Response(
+            jsonEncode({
+              'id': 'form-id',
+              'slug': 'class-interest',
+              'title': 'Class interest',
+              'description': '',
+              'version': 3,
+              'schema': {
+                'fields': [
+                  {
+                    'id': 'places',
+                    'type': 'number',
+                    'label': 'Places',
+                    'required': true,
+                  },
+                  {
+                    'id': 'guest',
+                    'type': 'text',
+                    'label': 'Guest name',
+                    'required': true,
+                    'show_when': {
+                      'field': 'places',
+                      'operator': 'equals',
+                      'value': 2,
+                    },
+                  },
+                ],
+              },
+            }),
+            200,
+            headers: {'content-type': 'application/json'},
+            request: request,
+          );
+        }
+        if (request.url.path.endsWith('/custom-forms')) {
+          submitted = Record.from(jsonDecode(request.body));
+          return http.Response(
+            jsonEncode({'ok': true, 'id': 'response-id'}),
+            200,
+            headers: {'content-type': 'application/json'},
+            request: request,
+          );
+        }
+        throw StateError('Unexpected request: ${request.url.path}');
+      });
+      late SupabaseClient client;
+      await tester.runAsync(() async {
+        client = SupabaseClient(
+          'https://example.supabase.co',
+          'test-key',
+          httpClient: httpClient,
+        );
+        // Start the SDK's JSON worker outside Flutter's fake timer zone.
+        await client.rpc(
+          'get_public_form',
+          params: {'p_slug': 'class-interest'},
+        );
+      });
+      final state = AppState(
+        Organisation({'website': 'https://example.org'}),
+        client,
+        await SharedPreferences.getInstance(),
+      );
+      await tester.runAsync(() async {
+        await tester.pumpWidget(
+          MaterialApp(home: CustomFormPage(state, slug: 'class-interest')),
+        );
+        await tester
+            .widget<FutureBuilder<Record?>>(find.byType(FutureBuilder<Record?>))
+            .future;
+      });
+      await tester.pumpAndSettle();
+      expect(
+        find.byType(TextFormField),
+        findsWidgets,
+        reason: tester
+            .widgetList<Text>(find.byType(Text))
+            .map((w) => w.data)
+            .join('|'),
+      );
+      expect(find.text('Guest name *'), findsNothing);
+      await tester.enterText(find.byType(TextFormField).first, '2');
+      await tester.pumpAndSettle();
+      expect(find.text('Guest name *'), findsOneWidget);
+      await tester.enterText(find.byType(TextFormField).last, 'Hidden later');
+      await tester.enterText(find.byType(TextFormField).first, '1');
+      await tester.pumpAndSettle();
+      expect(find.text('Guest name *'), findsNothing);
+      await tester.runAsync(() async {
+        final dynamic send = tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Send response'),
+            )
+            .onPressed;
+        await send();
+      });
+      await tester.pumpAndSettle();
+      expect(submitted?['answers'], {'places': 1});
+      expect(submitted?['version'], 3);
+      expect(
+        submitted?['idempotency_key'],
+        matches(RegExp(r'^[a-f0-9-]{36}$')),
+      );
+      expect(find.text('Your response has been received.'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+      state.dispose();
+      await tester.runAsync(client.dispose);
+    },
+  );
+  testWidgets(
+    'Editing an email recipient clears the reviewed acknowledgement',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final state = AppState(
+        Organisation({'website': 'https://example.org'}),
+        null,
+        await SharedPreferences.getInstance(),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FormEmailComposer(
+            state,
+            submissionId: 'response',
+            initialRecipient: 'first@example.org',
+            onSaved: () {},
+          ),
+        ),
+      );
+      await tester.ensureVisible(find.byType(Checkbox));
+      await tester.tap(find.byType(Checkbox));
+      await tester.pump();
+      expect(tester.widget<Checkbox>(find.byType(Checkbox)).value, isTrue);
+      await tester.enterText(
+        find.byType(TextField).first,
+        'changed@example.org',
+      );
+      await tester.pump();
+      expect(tester.widget<Checkbox>(find.byType(Checkbox)).value, isFalse);
+      expect(
+        emailDraftError(
+          'a@example.org',
+          'Subject\r\nBcc: other@example.org',
+          'Message',
+          true,
+        ),
+        isNotNull,
+      );
+      expect(
+        emailDraftError('a@example.org', 'Subject', 'Message', false),
+        isNotNull,
+      );
+      await tester.pumpWidget(const SizedBox());
+      state.dispose();
+    },
+  );
 }

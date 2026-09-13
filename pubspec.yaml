@@ -38,3 +38,10 @@ flutter:
     - assets/programmes.json
     - assets/brand/
     - assets/posters/
+    - assets/reading/
+    - assets/fonts/NotoNaskhArabic-OFL.txt
+
+  fonts:
+    - family: NotoNaskhArabic
+      fonts:
+        - asset: assets/fonts/NotoNaskhArabic-Regular.ttf

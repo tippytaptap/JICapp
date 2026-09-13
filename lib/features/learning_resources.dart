@@ -56,7 +56,8 @@ class CourseResourcesPage extends StatelessWidget {
               ),
             )
           : null,
-      itemBuilder: (row) => _ResourceCard(state, row, teacher),
+      itemBuilder: (row) =>
+          _ResourceCard(state, row, teacher, key: ValueKey(row['id'])),
     ),
   );
 }
@@ -65,7 +66,7 @@ class _ResourceCard extends StatefulWidget {
   final AppState state;
   final Record resource;
   final bool teacher;
-  const _ResourceCard(this.state, this.resource, this.teacher);
+  const _ResourceCard(this.state, this.resource, this.teacher, {super.key});
   @override
   State<_ResourceCard> createState() => _ResourceCardState();
 }
@@ -73,6 +74,15 @@ class _ResourceCard extends StatefulWidget {
 class _ResourceCardState extends State<_ResourceCard> {
   late bool published = widget.resource['published'] == true;
   bool deleted = false;
+  @override
+  void didUpdateWidget(covariant _ResourceCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.resource != widget.resource) {
+      published = widget.resource['published'] == true;
+      deleted = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = widget.resource;
@@ -95,6 +105,7 @@ class _ResourceCardState extends State<_ResourceCard> {
                   ? 'Open link'
                   : 'Open ${r['file_name'] ?? 'file'}',
               onPressed: () async {
+                final account = widget.state.userId;
                 // Refresh authorization before opening a previously displayed resource.
                 final fresh = await widget.state.client!
                     .from('learning_resources')
@@ -102,6 +113,7 @@ class _ResourceCardState extends State<_ResourceCard> {
                     .eq('id', r['id'])
                     .single()
                     .timeout(const Duration(seconds: 20));
+                if (!mounted || account != widget.state.userId) return;
                 final url =
                     fresh['url'] as String? ??
                     await widget.state.client!.storage
@@ -111,7 +123,9 @@ class _ResourceCardState extends State<_ResourceCard> {
                           60,
                           download: r['file_name'],
                         );
-                if (context.mounted) await openLink(context, url);
+                if (context.mounted && account == widget.state.userId) {
+                  await openLink(context, url);
+                }
               },
             ),
             if (widget.teacher)
@@ -133,6 +147,7 @@ class _ResourceCardState extends State<_ResourceCard> {
                   ),
                   TextButton(
                     onPressed: () async {
+                      final account = widget.state.userId;
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (c) => AlertDialog(
@@ -152,7 +167,11 @@ class _ResourceCardState extends State<_ResourceCard> {
                           ],
                         ),
                       );
-                      if (confirm != true) return;
+                      if (confirm != true ||
+                          !mounted ||
+                          account != widget.state.userId) {
+                        return;
+                      }
                       try {
                         await widget.state.client!
                             .from('learning_resources')
@@ -160,7 +179,8 @@ class _ResourceCardState extends State<_ResourceCard> {
                             .eq('id', r['id'])
                             .select('id')
                             .single();
-                        if (r['object_path'] != null) {
+                        if (r['object_path'] != null &&
+                            account == widget.state.userId) {
                           try {
                             await widget.state.client!.storage
                                 .from('course-resources')
@@ -218,8 +238,8 @@ class _ResourceEditorState extends State<_ResourceEditor> {
     }
     setState(() => busy = true);
     String? path;
+    final user = widget.state.userId;
     try {
-      final user = widget.state.userId;
       if (user == null) throw StateError('Sign in again');
       final Record values = {
         'course_id': widget.courseId,
@@ -235,6 +255,9 @@ class _ResourceEditorState extends State<_ResourceEditor> {
             throw StateError('File too large');
           }
           buffer.add(chunk);
+        }
+        if (!mounted || user != widget.state.userId) {
+          throw StateError('Account changed');
         }
         final bytes = buffer.takeBytes();
         final mime =
@@ -263,6 +286,9 @@ class _ResourceEditorState extends State<_ResourceEditor> {
       } else {
         values['url'] = url.text.trim();
       }
+      if (!mounted || user != widget.state.userId) {
+        throw StateError('Account changed');
+      }
       await widget.state.client!
           .from('learning_resources')
           .insert(values)
@@ -275,7 +301,7 @@ class _ResourceEditorState extends State<_ResourceEditor> {
         Navigator.pop(context);
       }
     } catch (_) {
-      if (path != null) {
+      if (path != null && user == widget.state.userId) {
         try {
           await widget.state.client!.storage.from('course-resources').remove([
             path,

@@ -1,0 +1,102 @@
+[
+  {
+    "id": "daily-hadith-1",
+    "collection": "hadith",
+    "title": "Sincere intentions",
+    "text": "Meaning / paraphrase:\n\nActions are judged by intentions.",
+    "reference": "Bukhari 1",
+    "source": "https://sunnah.com/bukhari:1",
+    "published": true,
+    "provenance": "Existing website reminder; concise English meaning, not a complete narration."
+  },
+  {
+    "id": "daily-hadith-2",
+    "collection": "hadith",
+    "title": "A kind word",
+    "text": "Meaning / paraphrase:\n\nA good word is charity.",
+    "reference": "Bukhari 2989",
+    "source": "https://sunnah.com/bukhari:2989",
+    "published": true,
+    "provenance": "Existing website reminder; concise English meaning, not a complete narration."
+  },
+  {
+    "id": "daily-hadith-3",
+    "collection": "hadith",
+    "title": "Gentleness",
+    "text": "Meaning / paraphrase:\n\nAllah is gentle and loves gentleness.",
+    "reference": "Muslim 2593",
+    "source": "https://sunnah.com/muslim:2593",
+    "published": true,
+    "provenance": "Existing website reminder; concise English meaning, not a complete narration."
+  },
+  {
+    "id": "daily-hadith-4",
+    "collection": "hadith",
+    "title": "Speak good",
+    "text": "Meaning / paraphrase:\n\nWhoever believes in Allah and the Last Day should speak good or remain silent.",
+    "reference": "Bukhari 6018 · meaning",
+    "source": "https://sunnah.com/bukhari:6018",
+    "published": true,
+    "provenance": "Existing website reminder; concise English meaning, not a complete narration."
+  },
+  {
+    "id": "daily-hadith-5",
+    "collection": "hadith",
+    "title": "Learning the Quran",
+    "text": "Meaning / paraphrase:\n\nAmong the best of you are those who learn the Qur’an and teach it.",
+    "reference": "Bukhari 5027 · meaning",
+    "source": "https://sunnah.com/bukhari:5027",
+    "published": true,
+    "provenance": "Existing website reminder; concise English meaning, not a complete narration."
+  },
+  {
+    "id": "daily-hadith-6",
+    "collection": "hadith",
+    "title": "Helping others",
+    "text": "Meaning / paraphrase:\n\nAllah helps a servant who helps another.",
+    "reference": "Muslim 2699a · meaning",
+    "source": "https://sunnah.com/muslim:2699a",
+    "published": true,
+    "provenance": "Existing website reminder; concise English meaning, not a complete narration."
+  },
+  {
+    "id": "daily-hadith-7",
+    "collection": "hadith",
+    "title": "Seeking knowledge",
+    "text": "Meaning / paraphrase:\n\nSeeking knowledge is a path that Allah makes easy towards Paradise.",
+    "reference": "Muslim 2699a · meaning",
+    "source": "https://sunnah.com/muslim:2699a",
+    "published": true,
+    "provenance": "Existing website reminder; concise English meaning, not a complete narration."
+  },
+  {
+    "id": "daily-hadith-8",
+    "collection": "hadith",
+    "title": "Strength and faith",
+    "text": "Meaning / paraphrase:\n\nThe strong believer is better and more beloved to Allah than the weak believer.",
+    "reference": "Muslim 2664 · meaning",
+    "source": "https://sunnah.com/muslim:2664",
+    "published": true,
+    "provenance": "Existing website reminder; concise English meaning, not a complete narration."
+  },
+  {
+    "id": "daily-hadith-9",
+    "collection": "hadith",
+    "title": "Care for others",
+    "text": "Meaning / paraphrase:\n\nNone of you truly believes until he loves for his brother what he loves for himself.",
+    "reference": "Bukhari 13 · meaning",
+    "source": "https://sunnah.com/bukhari:13",
+    "published": true,
+    "provenance": "Existing website reminder; concise English meaning, not a complete narration."
+  },
+  {
+    "id": "daily-hadith-10",
+    "collection": "hadith",
+    "title": "Showing mercy",
+    "text": "Meaning / paraphrase:\n\nWhoever does not show mercy will not be shown mercy.",
+    "reference": "Bukhari 6013 · meaning",
+    "source": "https://sunnah.com/bukhari:6013",
+    "published": true,
+    "provenance": "Existing website reminder; concise English meaning, not a complete narration."
+  }
+]

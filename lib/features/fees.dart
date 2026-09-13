@@ -248,10 +248,12 @@ class _FeeDetailState extends State<_FeeDetail> {
   late Future<Record> request = load();
   Future<Record> load() async {
     final values = await Future.wait<dynamic>([
-      widget.state.client!.rpc(
-        'list_fee_requests',
-        params: {'p_fee_id': widget.id, 'p_limit': 1},
-      ).then<dynamic>((value) => value),
+      widget.state.client!
+          .rpc(
+            'list_fee_requests',
+            params: {'p_fee_id': widget.id, 'p_limit': 1},
+          )
+          .then<dynamic>((value) => value),
       widget.state.client!
           .from('fee_receipts')
           .select(
@@ -259,7 +261,8 @@ class _FeeDetailState extends State<_FeeDetail> {
           )
           .eq('fee_id', widget.id)
           .order('created_at', ascending: false)
-          .range(page * 25, page * 25 + 24).then<dynamic>((value) => value),
+          .range(page * 25, page * 25 + 24)
+          .then<dynamic>((value) => value),
     ]).timeout(const Duration(seconds: 20));
     final rows = values[0] is Map
         ? records((values[0] as Map)['rows'])
@@ -270,11 +273,16 @@ class _FeeDetailState extends State<_FeeDetail> {
 
   void reload() => setState(() => request = load());
   Future<void> adjust(String rpc, String idKey, String id, String title) async {
+    final actor = widget.state.userId;
     final reason = await showDialog<String>(
       context: context,
       builder: (_) => _ReasonDialog(title),
     );
-    if (reason == null || !mounted) return;
+    if (reason == null ||
+        !mounted ||
+        actor == null ||
+        widget.state.userId != actor)
+      return;
     setState(() => busy = true);
     try {
       await widget.state.client!
@@ -561,8 +569,11 @@ class _FeeEditorState extends State<_FeeEditor> {
   }
 
   Future<void> restore() async {
+    final actor = widget.state.userId;
+    final key = storageKey;
     try {
-      final saved = await storage.read(key: storageKey);
+      final saved = await storage.read(key: key);
+      if (!mounted || actor == null || widget.state.userId != actor) return;
       if (saved != null) {
         final value = jsonDecode(saved);
         if (value is! Map ||
@@ -595,6 +606,8 @@ class _FeeEditorState extends State<_FeeEditor> {
 
   Future<void> submit() async {
     if (busy || !ready || !form.currentState!.validate()) return;
+    final actor = widget.state.userId;
+    final key = storageKey;
     setState(() {
       busy = true;
       error = null;
@@ -615,17 +628,15 @@ class _FeeEditorState extends State<_FeeEditor> {
       };
       // Retain exact payload/key across timeouts, navigation and app restarts.
       // A retry either returns the previous success or creates this one entry.
-      await storage.write(
-        key: storageKey,
-        value: jsonEncode({'params': attempt}),
-      );
+      await storage.write(key: key, value: jsonEncode({'params': attempt}));
+      if (!mounted || actor == null || widget.state.userId != actor) return;
       await widget.state.client!
           .rpc(
             receipt ? 'confirm_fee_payment' : 'create_fee_request',
             params: attempt,
           )
           .timeout(const Duration(seconds: 25));
-      await storage.delete(key: storageKey);
+      await storage.delete(key: key);
       if (mounted) Navigator.pop(context);
     } on PostgrestException catch (e) {
       if (const {
@@ -636,11 +647,13 @@ class _FeeEditorState extends State<_FeeEditor> {
         '23503',
       }.contains(e.code)) {
         try {
-          await storage.delete(key: storageKey);
+          await storage.delete(key: key);
           attempt = null;
-          error = 'This entry was not accepted. Check the amount, details and your access, then try again.';
+          error =
+              'This entry was not accepted. Check the amount, details and your access, then try again.';
         } catch (_) {
-          error = 'The entry was not accepted, but the saved draft could not be updated. Check device storage before retrying.';
+          error =
+              'The entry was not accepted, but the saved draft could not be updated. Check device storage before retrying.';
         }
       } else {
         error =

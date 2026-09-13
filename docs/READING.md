@@ -24,7 +24,7 @@ Arabic text notice: https://tanzil.net/docs/Text_License
 
 The Tanzil copyright/terms notice is preserved in downloaded cache records; the reader names Tanzil and Sahih International and links to the sources. Downloaded readings are for user-chosen offline use. Translation rights remain with the named rights-holder.
 
-No Dala’il, Hizb or hadith edition has been silently bundled or generated. The organisation needs to publish the edition it uses, references and approved text with permission where applicable. The reader and offline/search functionality are ready for that content. A link-only library entry still requires a connection to open its external source.
+Ten short English hadith meanings from the existing website reminders are bundled with their original references and source links. They are explicitly labelled as paraphrases and provide an offline fallback plus a date-selected daily reminder. No complete hadith, Dala’il or Hizb edition is bundled or generated. The organisation needs to publish the editions it uses, references and approved text with permission where applicable. The reader and offline/search functionality are ready for that content. A link-only library entry still requires a connection to open its external source.
 
 ## Verification
 

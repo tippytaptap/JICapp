@@ -574,7 +574,7 @@ class UpdateCard extends StatelessWidget {
             update['kind'] == 'task'
                 ? 'Task update'
                 : update['kind'] == 'fee'
-                ? FeeLedgerPage(widget.state, feeId: '${update['entity_id']}')
+                ? 'Fee update'
                 : update['kind'] == 'form'
                 ? 'Form reply'
                 : 'Learning update',

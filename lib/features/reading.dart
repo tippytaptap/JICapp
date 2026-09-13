@@ -2,12 +2,17 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import '../core/app_state.dart';
 import '../core/models.dart';
 import '../core/reading_store.dart';
 import '../widgets/common.dart';
 import 'tasbih.dart';
 import 'sermons.dart';
+
+final _bundledHadith = rootBundle
+    .loadString('assets/reading/hadith-reminders.json')
+    .then((text) => ReadingStore.validateLibrary(jsonDecode(text)));
 
 class ReadingView extends StatelessWidget {
   final AppState state;
@@ -47,6 +52,55 @@ class ReadingView extends StatelessWidget {
             ),
           ),
         ),
+      ),
+      FutureBuilder<List<Record>>(
+        future: _bundledHadith,
+        builder: (context, snapshot) {
+          final approved = state.library
+              .where((r) => r['collection'] == 'hadith')
+              .toList();
+          final readings = approved.isNotEmpty
+              ? approved
+              : snapshot.data ?? <Record>[];
+          if (readings.isEmpty) return const SizedBox.shrink();
+          final now = DateTime.now();
+          final day =
+              DateTime.utc(
+                now.year,
+                now.month,
+                now.day,
+              ).millisecondsSinceEpoch ~/
+              Duration.millisecondsPerDay;
+          final entry = readings[day % readings.length];
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Today’s reminder',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${entry['text'] ?? entry['body'] ?? entry['title']}',
+                    style: const TextStyle(height: 1.7),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('${entry['reference'] ?? ''}'),
+                  TextButton(
+                    onPressed: () => showPage(
+                      context,
+                      LibraryPage(state, 'hadith', 'Hadith'),
+                    ),
+                    child: const Text('Read more reminders'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
       const SectionTitle('Your reading library'),
       for (final entry in const {
@@ -97,7 +151,7 @@ class LibraryPage extends StatefulWidget {
 class _LibraryPageState extends State<LibraryPage> {
   late final store = ReadingStore(widget.state.preferences);
   List<Record> entries = [];
-  bool loading = true, offline = false;
+  bool loading = true, offline = false, bundled = false;
   String search = '';
   late double font = widget.state.preferences.getDouble('library.font') ?? 28;
   String get organisation => widget.state.organisation.website;
@@ -145,12 +199,23 @@ class _LibraryPageState extends State<LibraryPage> {
         cached = true;
       }
     }
+    var selected = next
+        .where((r) => r['collection'] == widget.collection)
+        .toList();
+    var usingBundled = false;
+    if (selected.isEmpty && widget.collection == 'hadith') {
+      try {
+        selected = await _bundledHadith;
+        usingBundled = selected.isNotEmpty;
+      } catch (_) {
+        /* Existing collection empty state remains available. */
+      }
+    }
     if (mounted) {
       setState(() {
-        entries = next
-            .where((r) => r['collection'] == widget.collection)
-            .toList();
-        offline = cached;
+        entries = selected;
+        offline = cached && !usingBundled;
+        bundled = usingBundled;
         loading = false;
       });
     }
@@ -188,6 +253,13 @@ class _LibraryPageState extends State<LibraryPage> {
               onChanged: (v) => setState(() => search = v),
             ),
           ),
+          if (bundled)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Short English meanings from the centre’s daily reminders. Full narrations are linked with each reference.',
+              ),
+            ),
           if (offline)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
