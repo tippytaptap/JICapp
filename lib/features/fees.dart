@@ -281,8 +281,9 @@ class _FeeDetailState extends State<_FeeDetail> {
     if (reason == null ||
         !mounted ||
         actor == null ||
-        widget.state.userId != actor)
+        widget.state.userId != actor) {
       return;
+    }
     setState(() => busy = true);
     try {
       await widget.state.client!

@@ -14,6 +14,12 @@ import 'package:community_app/features/user_management.dart';
 import 'package:community_app/features/learning_management.dart';
 import 'package:community_app/features/form_email.dart';
 
+class _SignedInState extends AppState {
+  _SignedInState(super.organisation, super.client, super.preferences);
+  @override
+  String? get userId => 'manager';
+}
+
 void main() {
   test('Hidden answers are omitted and visible numeric answers are typed', () {
     final fields = <Record>[
@@ -246,7 +252,7 @@ void main() {
     'Revoking user management permission removes an open access editor',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
-      final state = AppState(
+      final state = _SignedInState(
         Organisation({'website': 'https://example.org'}),
         null,
         await SharedPreferences.getInstance(),
@@ -278,7 +284,7 @@ void main() {
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
-    final state = AppState(
+    final state = _SignedInState(
       Organisation({'website': 'https://example.org'}),
       null,
       await SharedPreferences.getInstance(),
@@ -307,7 +313,7 @@ void main() {
     state.notifyListeners();
     await tester.pumpAndSettle();
     expect(find.text('Private guardian links'), findsNothing);
-    expect(find.text('Owner access is required.'), findsOneWidget);
+    expect(find.textContaining('account or access has changed'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     state.dispose();
   });
@@ -431,7 +437,7 @@ void main() {
     'Editing an email recipient clears the reviewed acknowledgement',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
-      final state = AppState(
+      final state = _SignedInState(
         Organisation({'website': 'https://example.org'}),
         null,
         await SharedPreferences.getInstance(),

@@ -10,7 +10,11 @@ import 'package:community_app/features/workspace.dart';
 
 class SignedInWorkspaceState extends AppState {
   SignedInWorkspaceState(SharedPreferences preferences)
-      : super(Organisation({'website': 'https://example.org'}), null, preferences);
+    : super(
+        Organisation({'website': 'https://example.org'}),
+        null,
+        preferences,
+      );
   @override
   String get userId => 'workspace-account';
 }

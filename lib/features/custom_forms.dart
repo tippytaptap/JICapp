@@ -273,7 +273,7 @@ class _CustomFormPageState extends State<_CustomFormBody> {
           ? ['jpg', 'jpeg', 'png', 'webp']
           : uploadMime.keys.toList(),
     );
-    if (file == null || !currentAttempt) return;
+    if (file == null || !mounted || !currentAttempt) return;
     final declaredSize = file.lengthSync();
     final invalid = uploadError(
       file.name,
