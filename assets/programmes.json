@@ -1,0 +1,105 @@
+[
+  {
+    "id": "open-quran-circle",
+    "title": "Open Qur’an Circle",
+    "subtitle": "Fridays · All are welcome",
+    "schedule": "6:30pm · Woodlands Road Masjid",
+    "detail": "Join our open Qur’an circle on Fridays at Jamatia Islamic Centre.",
+    "image": "/posters/open-quran-circle.png",
+    "alt": "Open Qur’an Circle at Woodlands Road Masjid, Jamatia Islamic Centre. Fridays at 6:30pm. All are welcome.",
+    "to": "/worship",
+    "groups": [
+      "home",
+      "education",
+      "worship"
+    ],
+    "audience": "all",
+    "sessions": [
+      {
+        "day": 5,
+        "time": "18:30",
+        "label": "Open Qur’an Circle"
+      }
+    ]
+  },
+  {
+    "id": "youth-islamic-studies",
+    "title": "Youth Islamic Studies",
+    "subtitle": "For boys · Starts September 2026",
+    "schedule": "Mon, Tue & Thu · 5–6.30pm",
+    "detail": "Six terms over two years · £300/year (£100/term).",
+    "image": "/posters/youth-islamic-studies.jpg",
+    "alt": "Youth Islamic Studies for boys: Fiqh, Aqida, Hadith, Qur’an, du’as, Arabic and Islamic character. Six terms over two years, Monday, Tuesday and Thursday 5–6.30pm, starting September 2026. £300 per year.",
+    "to": "/youth/classes-skills",
+    "groups": [
+      "home",
+      "education",
+      "youth",
+      "madrassah"
+    ],
+    "audience": "youth",
+    "sessions": []
+  },
+  {
+    "id": "seekers-gateway",
+    "title": "The Seeker’s Gateway",
+    "subtitle": "Males & females · Starts September 2026",
+    "schedule": "Supervised by Shaykh Qamar Ilyas",
+    "detail": "Foundations of Islamic scholarship · £100/term (three terms/year).",
+    "image": "/posters/seekers-gateway.jpg",
+    "alt": "The Seeker’s Gateway: Arabic, Fiqh, Aqida, Tajwid, Sirah, Tafsir, Hadith, Usul, Logic and Apologetics. Starts September 2026, supervised by Shaykh Qamar Ilyas. Open to males and females, £100 per term. Contact 07484127444 between 11am and 12.15pm.",
+    "to": "/education/classes-courses",
+    "groups": [
+      "home",
+      "education"
+    ],
+    "audience": "adult",
+    "sessions": []
+  },
+  {
+    "id": "after-maghrib",
+    "title": "After Maghrib",
+    "subtitle": "With Shaykh Muhammad Yaseen",
+    "schedule": "Mon: Sirah · Wed: Aqida · Fri: Dhikr",
+    "detail": "Gatherings after Maghrib at Jamatia Islamic Centre.",
+    "image": "/posters/after-maghrib.jpg",
+    "alt": "After Maghrib with Shaykh Muhammad Yaseen: Monday Sirah, Wednesday Aqida, Friday Majlis of Dhikr, at Jamatia Islamic Centre, 179–183 Woodlands Road, Birmingham B11 4ER.",
+    "to": "/worship",
+    "groups": [
+      "home",
+      "education",
+      "worship"
+    ],
+    "audience": "all",
+    "sessions": [
+      {
+        "day": 1,
+        "relativeTo": "maghrib",
+        "label": "Sirah"
+      },
+      {
+        "day": 3,
+        "relativeTo": "maghrib",
+        "label": "Aqida"
+      },
+      {
+        "day": 5,
+        "relativeTo": "maghrib",
+        "label": "Majlis of Dhikr"
+      }
+    ]
+  },
+  {
+    "id": "adhan-iqamah-course",
+    "title": "Adhan & Iqamah Course",
+    "subtitle": "Six-week course",
+    "schedule": "Sundays after Dhuhr · Starting 9 August 2026",
+    "detail": "Learn to deliver the Adhan and Iqamah with correct tajwid, rulings and etiquette.",
+    "image": "/posters/adhan-iqamah-course.jpg",
+    "alt": "Jamatia Islamic Centre Adhan and Iqamah six-week course, starting Sunday 9 August 2026 after Dhuhr.",
+    "to": "/worship",
+    "groups": [],
+    "audience": "adult",
+    "sessions": []
+  }
+]
