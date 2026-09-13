@@ -1,9 +1,11 @@
+import java.util.Properties
+
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
 }
 
-val flutterVersion = java.util.Properties().apply {
+val flutterVersion = Properties().apply {
   rootProject.file("local.properties").inputStream().use { load(it) }
 }
 val phoneVersionCode = (flutterVersion.getProperty("flutter.versionCode") ?: "1").toInt()
