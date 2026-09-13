@@ -26,6 +26,7 @@
 		CA71000000000000000000CE = {isa = PBXBuildFile; fileRef = CA71000000000000000000C9; };
 		CA71000000000000000000CF = {isa = PBXBuildFile; fileRef = CA7100000000000000000001; };
 		CA71000000000000000000D3 = {isa = PBXBuildFile; fileRef = CA71000000000000000000CC; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		CA7100000000000000000079 = {isa = PBXBuildFile; fileRef = CA7100000000000000000078; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,6 +91,7 @@
 		CA71000000000000000000CA = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA71000000000000000000CB = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WatchWidgets.entitlements; sourceTree = "<group>"; };
 		CA71000000000000000000CC = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA7100000000000000000078 = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -170,7 +172,7 @@
 		};
 		B94200700000000000000007 /* PrayerWidget */ = {isa = PBXGroup; children = (B94200700000000000000001, B94200700000000000000011, B94200700000000000000012, ); path = PrayerWidget; sourceTree = "<group>"; };
 		CA7100000000000000000002 = {isa = PBXGroup; children = (CA7100000000000000000001, ); path = WatchShared; sourceTree = "<group>"; };
-		CA7100000000000000000069 = {isa = PBXGroup; children = (CA7100000000000000000065, CA7100000000000000000066, CA7100000000000000000067, ); path = CommunityWatch; sourceTree = "<group>"; };
+		CA7100000000000000000069 = {isa = PBXGroup; children = (CA7100000000000000000065, CA7100000000000000000066, CA7100000000000000000067, CA7100000000000000000078, ); path = CommunityWatch; sourceTree = "<group>"; };
 		CA71000000000000000000CD = {isa = PBXGroup; children = (CA71000000000000000000C9, CA71000000000000000000CA, CA71000000000000000000CB, ); path = WatchWidgets; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
@@ -288,7 +290,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		B9420070000000000000000B = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-		CA710000000000000000006D = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		CA710000000000000000006D = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (CA7100000000000000000079, ); runOnlyForDeploymentPostprocessing = 0; };
 		CA71000000000000000000D1 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
@@ -718,6 +720,7 @@
             }; name = Profile; };
 		CA7100000000000000000075 = {isa = XCBuildConfiguration; buildSettings = {
             APPLICATION_EXTENSION_API_ONLY = NO;
+            ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
             CLANG_ENABLE_MODULES = YES;
             CODE_SIGN_ENTITLEMENTS = CommunityWatch/CommunityWatch.entitlements;
             CODE_SIGN_STYLE = Automatic;
@@ -738,6 +741,7 @@
         }; name = Debug; };
 		CA7100000000000000000076 = {isa = XCBuildConfiguration; buildSettings = {
             APPLICATION_EXTENSION_API_ONLY = NO;
+            ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
             CLANG_ENABLE_MODULES = YES;
             CODE_SIGN_ENTITLEMENTS = CommunityWatch/CommunityWatch.entitlements;
             CODE_SIGN_STYLE = Automatic;
@@ -758,6 +762,7 @@
         }; name = Release; };
 		CA7100000000000000000077 = {isa = XCBuildConfiguration; buildSettings = {
             APPLICATION_EXTENSION_API_ONLY = NO;
+            ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
             CLANG_ENABLE_MODULES = YES;
             CODE_SIGN_ENTITLEMENTS = CommunityWatch/CommunityWatch.entitlements;
             CODE_SIGN_STYLE = Automatic;

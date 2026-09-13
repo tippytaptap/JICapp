@@ -29,7 +29,7 @@ class _SermonArchivePageState extends State<SermonArchivePage> {
   Future<List<Record>> load() async {
     final client = widget.state.client;
     if (client == null) return [];
-    var result = client.from('sermon_publications').select(sermonFields);
+    var result = client.from('sermon_publications').select('id,title,speaker,summary,published_at');
     if (query.isNotEmpty) {
       final escaped = query.replaceAllMapped(
         RegExp(r'[%_\\]'),
@@ -89,13 +89,14 @@ class _SermonArchivePageState extends State<SermonArchivePage> {
               if (snapshot.connectionState != ConnectionState.done) {
                 return const Center(child: CircularProgressIndicator());
               }
-              if (snapshot.hasError)
+              if (snapshot.hasError) {
                 return Center(
                   child: TextButton(
                     onPressed: reload,
                     child: const Text('Could not load talks. Retry'),
                   ),
                 );
+              }
               final rows = snapshot.data ?? [];
               return ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -110,10 +111,14 @@ class _SermonArchivePageState extends State<SermonArchivePage> {
                       icon: Icons.headphones_outlined,
                       title: '${talk['title']}',
                       subtitle: '${talk['speaker']}',
-                      onTap: () => showPage(
-                        context,
-                        SermonPage(widget.state, widget.radio, talk),
-                      ),
+                      onTap: () async {
+                        try {
+                          final detail = await widget.state.client!.from('sermon_publications').select(sermonFields).eq('id', talk['id']).single().timeout(const Duration(seconds: 20));
+                          if (context.mounted) showPage(context, SermonPage(widget.state, widget.radio, detail));
+                        } catch (_) {
+                          if (context.mounted) notice(context, 'This talk is unavailable. Please refresh.');
+                        }
+                      },
                     ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -172,11 +177,13 @@ class _SermonPageState extends State<SermonPage> {
       if (!mounted) return;
       audioUrl = url;
       await widget.radio.playRecording(url, '${widget.talk['title']}');
-      if (seconds != null)
+      if (seconds != null) {
         await widget.radio.player.seek(Duration(seconds: seconds));
+      }
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         notice(context, 'The recording could not play. Please try again.');
+      }
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -200,8 +207,7 @@ class _SermonPageState extends State<SermonPage> {
             builder: (context, _) {
               final mine =
                   audioUrl != null &&
-                  widget.radio.player.audioSource?.sequence.first.tag?.id ==
-                      audioUrl;
+                  widget.radio.sourceUrl == audioUrl;
               return Wrap(
                 spacing: 8,
                 children: [

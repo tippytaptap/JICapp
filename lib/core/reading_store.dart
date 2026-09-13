@@ -7,6 +7,28 @@ import 'reading_cache_web.dart'
     if (dart.library.io) 'reading_cache_native.dart'
     as platform;
 
+const tanzilNotice = '''Tanzil Quran Text
+Copyright (C) 2007-2021 Tanzil Project
+License: Creative Commons Attribution 3.0
+
+This copy of the Quran text is carefully produced, highly
+verified and continuously monitored by a group of specialists
+in Tanzil Project.
+
+TERMS OF USE:
+- Permission is granted to copy and distribute verbatim copies
+  of this text, but CHANGING IT IS NOT ALLOWED.
+- This Quran text can be used in any website or application,
+  provided that its source (Tanzil Project) is clearly indicated,
+  and a link is made to tanzil.net to enable users to keep
+  track of changes.
+- This copyright notice shall be included in all verbatim copies
+  of the text, and shall be reproduced appropriately in all files
+  derived from or containing substantial portion of this text.
+
+Please check updates at: https://tanzil.net/updates/
+''';
+
 // Catalogue metadata: https://api.alquran.cloud/v1/surah, checked 2026-09-13.
 // Text is downloaded unchanged from the named editions, never generated.
 const surahNames = [
@@ -393,15 +415,23 @@ class ReadingStore {
       'savedAt': DateTime.now().toUtc().toIso8601String(),
       'source': 'https://alquran.cloud',
       'arabicSource': 'Tanzil Project — https://tanzil.net',
+      'arabicNotice': tanzilNotice,
       'translation': 'Sahih International (en.sahih)',
       'response': reading.payload,
     }),
   );
   Future<void> remove(int surah) => cache.remove('quran-$surah');
-  Future<Set<int>> downloaded() async => {
-    for (final key in await cache.keys())
-      if (RegExp(r'^quran-\d+$').hasMatch(key)) int.parse(key.substring(6)),
-  };
+  Future<Set<int>> downloaded() async {
+    final found = <int>{};
+    for (final key in await cache.keys()) {
+      if (!RegExp(r'^quran-\d+$').hasMatch(key)) continue;
+      final surah = int.parse(key.substring(6));
+      if (surah >= 1 && surah <= 114 && await cached(surah) != null) {
+        found.add(surah);
+      }
+    }
+    return found;
+  }
 
   Set<String> get bookmarks =>
       (preferences.getStringList('quran.bookmarks') ?? [])
@@ -435,6 +465,8 @@ class ReadingStore {
   }
 
   String get position {
+    final position = preferences.getString('quran.position');
+    if (position != null && validReference(position)) return position;
     final saved =
         '${preferences.getInt('quran.surah') ?? 1}:'
         '${preferences.getInt('quran.ayah') ?? 1}';
@@ -443,6 +475,9 @@ class ReadingStore {
 
   Future<void> setPosition(int surah, int ayah) async {
     if (!validReference('$surah:$ayah')) throw ArgumentError('Invalid verse');
+    if (!await preferences.setString('quran.position', '$surah:$ayah')) {
+      throw StateError('Reading position could not be saved');
+    }
     await preferences.setInt('quran.surah', surah);
     await preferences.setInt('quran.ayah', ayah);
   }
@@ -451,8 +486,9 @@ class ReadingStore {
     final encoded = base64Url
         .encode(utf8.encode(organisation))
         .replaceAll('=', '');
-    if (encoded.length > 140)
+    if (encoded.length > 140) {
       throw ArgumentError('Organisation URL is too long');
+    }
     return 'library-$encoded';
   }
 

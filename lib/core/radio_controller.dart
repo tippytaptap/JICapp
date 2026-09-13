@@ -19,6 +19,8 @@ class RadioController extends ChangeNotifier {
   Timer? _sleep;
   DateTime? stopAt;
   bool busy = false;
+  int _request = 0;
+  bool _disposed = false;
   String? error;
   String? sourceUrl;
   String currentTitle = 'Live radio';
@@ -29,14 +31,19 @@ class RadioController extends ChangeNotifier {
   Future<void> play() => _playSource(organisation.radio, 'Live radio');
 
   Future<void> playRecording(String url, String title) async {
-    if (!safeWebUrl(url))
+    if (!safeWebUrl(url)) {
       throw ArgumentError('A secure recording URL is required.');
+    }
+    if (busy) {
+      throw StateError('Audio is already opening.');
+    }
     await _playSource(url, title);
     if (error != null) throw StateError(error!);
   }
 
   Future<void> _playSource(String url, String title) async {
     if (busy) return;
+    final request = ++_request;
     busy = true;
     error = null;
     notifyListeners();
@@ -44,6 +51,7 @@ class RadioController extends ChangeNotifier {
       _sleep?.cancel();
       stopAt = null;
       await player.stop();
+      if (_disposed || request != _request) return;
       if (!kIsWeb) {
         await (await AudioSession.instance).configure(
           const AudioSessionConfiguration.speech(),
@@ -57,28 +65,35 @@ class RadioController extends ChangeNotifier {
             ),
           )
           .timeout(const Duration(seconds: 25));
+      if (_disposed || request != _request) return;
       sourceUrl = url;
       currentTitle = title;
       unawaited(
         player.play().catchError((Object _) {
+          if (_disposed || request != _request) return;
           error = 'Audio could not play. Try again.';
           notifyListeners();
         }),
       );
     } catch (_) {
+      if (_disposed || request != _request) return;
       error = 'Audio is unavailable. Try again shortly.';
       await player.stop();
     } finally {
-      busy = false;
-      notifyListeners();
+      if (!_disposed && request == _request) {
+        busy = false;
+        notifyListeners();
+      }
     }
   }
 
   Future<void> stop() async {
+    _request++;
+    busy = false;
     _sleep?.cancel();
     stopAt = null;
     await player.stop();
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
 
   void sleepAfter(int minutes) {
@@ -96,6 +111,8 @@ class RadioController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
+    _request++;
     _sleep?.cancel();
     _subscription?.cancel();
     player.dispose();

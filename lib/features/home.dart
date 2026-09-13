@@ -74,7 +74,8 @@ class HomeView extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
                     FilledButton.icon(
-                      onPressed: () => showPage(context, RadioPage(radio)),
+                      onPressed: () =>
+                          showPage(context, RadioPage(radio, state: state)),
                       icon: const Icon(Icons.radio, size: 18),
                       label: const Text('Listen to radio'),
                     ),

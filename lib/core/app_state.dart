@@ -9,6 +9,7 @@ import 'models.dart';
 import 'widget_service.dart';
 import 'notification_service.dart';
 import 'radio_controller.dart';
+import 'watch_service.dart';
 
 class AppState extends ChangeNotifier {
   final Organisation organisation;
@@ -219,6 +220,7 @@ class AppState extends ChangeNotifier {
     _refreshing = false;
     try {
       await PrayerWidgetService.update(organisation, prayers);
+      await WatchService.update(organisation, prayers);
     } catch (_) {
       // Widget configuration must not prevent the in-app timetable loading.
     }

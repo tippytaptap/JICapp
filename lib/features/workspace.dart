@@ -259,6 +259,17 @@ class _TasksPageState extends State<TasksPage> {
       itemBuilder: (task) => TaskCard(
         task: task,
         assignedToMe: task['assigned_to'] == widget.state.userId,
+        onOpenForm: task['form_id'] == null
+            ? null
+            : () => showPrivatePage(
+                context,
+                widget.state,
+                FormConversationPage(
+                  widget.state,
+                  submissionId: '${task['form_id']}',
+                  staff: true,
+                ),
+              ),
         onStatus: (value) async {
           await widget.state.client!
               .from('work_tasks')
@@ -277,11 +288,13 @@ class _TasksPageState extends State<TasksPage> {
 class TaskCard extends StatelessWidget {
   final Record task;
   final bool assignedToMe;
+  final VoidCallback? onOpenForm;
   final Future<void> Function(String) onStatus;
   const TaskCard({
     super.key,
     required this.task,
     required this.assignedToMe,
+    this.onOpenForm,
     required this.onStatus,
   });
   @override
@@ -299,7 +312,11 @@ class TaskCard extends StatelessWidget {
           if ('${task['description'] ?? ''}'.isNotEmpty)
             Text('${task['description']}'),
           Text(assignedToMe ? 'Assigned to you' : 'Delegated task'),
-          if (task['form_id'] != null) const Text('Linked to a form response'),
+          if (task['form_id'] != null)
+            TextButton(
+              onPressed: onOpenForm,
+              child: const Text('Open form response'),
+            ),
           if (task['due_at'] != null)
             Text('Due ${formatWorkspaceDate(task['due_at'])}'),
           const SizedBox(height: 8),

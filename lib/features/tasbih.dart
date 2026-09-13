@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/models.dart';
 import '../core/worship_store.dart';
+import '../core/watch_service.dart';
 import '../widgets/common.dart';
 
 class TasbihPage extends StatefulWidget {
@@ -28,6 +29,85 @@ class _TasbihPageState extends State<TasbihPage> {
     widget.preferences.getString('tasbih.routine'),
   );
   Future<void> saving = Future.value();
+  bool transferring = false;
+  Future<void> watchTransfer({required bool importing}) async {
+    if (transferring) return;
+    setState(() => transferring = true);
+    try {
+      await saving;
+      if (importing) {
+        final snapshot = await WatchService.incomingCounter();
+        if (!mounted) return;
+        if (snapshot == null) {
+          notice(context, 'Send your count from the watch first.');
+          return;
+        }
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (c) => AlertDialog(
+            title: const Text('Use the watch count?'),
+            content: Text(
+              'Replace this circle with ${snapshot.count} and a round of ${snapshot.target}? '
+              'Your daily routine total will stay as it is.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(c, false),
+                child: const Text('Keep phone count'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(c, true),
+                child: const Text('Use watch count'),
+              ),
+            ],
+          ),
+        );
+        if (confirmed != true || !mounted) return;
+        if (!await widget.preferences.setInt('tasbih.count', snapshot.count) ||
+            !await widget.preferences.setInt(
+              'tasbih.target',
+              snapshot.target,
+            )) {
+          throw StateError('Could not save watch count');
+        }
+        if (mounted) {
+          setState(() {
+            count = snapshot.count;
+            target = snapshot.target;
+          });
+        }
+        await WatchService.markImported(snapshot);
+        if (mounted) notice(context, 'Watch count imported.');
+      } else {
+        if (![33, 99, 100].contains(target)) {
+          if (mounted) {
+            notice(
+              context,
+              'Choose a round of 33, 99 or 100 to send to your watch.',
+            );
+          }
+          return;
+        }
+        await WatchService.sendCounter(count, target);
+        if (mounted) {
+          notice(
+            context,
+            'Ready for watch. Choose Import phone count on your watch.',
+          );
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        notice(
+          context,
+          'Your paired watch is unavailable. Check the connection and try again.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => transferring = false);
+    }
+  }
+
   void persistRoutine() {
     final value = routine.encode();
     saving = saving
@@ -47,8 +127,9 @@ class _TasbihPageState extends State<TasbihPage> {
   }
 
   Future<void> change(int value, {bool reset = false}) async {
-    final delta = value - count;
-    setState(() => count = value.clamp(0, 99999999));
+    final nextCount = value.clamp(0, 99999999);
+    final delta = nextCount - count;
+    setState(() => count = nextCount);
     if (!reset) routine = routine.count(delta, DateTime.now());
     final next = count;
     saving = saving
@@ -150,7 +231,7 @@ class _TasbihPageState extends State<TasbihPage> {
                   backgroundColor: const Color(0xffd6af62),
                   foregroundColor: const Color(0xff10213a),
                 ),
-                onPressed: () => change(count + 1),
+                onPressed: transferring ? null : () => change(count + 1),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -308,6 +389,40 @@ class _TasbihPageState extends State<TasbihPage> {
           ),
         ),
         const SizedBox(height: 16),
+        if (WatchService.supported)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text('Continue with your watch'),
+                  const Text(
+                    'Phone and watch keep their own counts. Transfer a count when you choose.',
+                  ),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      TextButton.icon(
+                        onPressed: transferring
+                            ? null
+                            : () => watchTransfer(importing: false),
+                        icon: const Icon(Icons.watch_outlined),
+                        label: const Text('Send to watch'),
+                      ),
+                      TextButton.icon(
+                        onPressed: transferring
+                            ? null
+                            : () => watchTransfer(importing: true),
+                        icon: const Icon(Icons.download_outlined),
+                        label: const Text('Import from watch'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         const Text(
           'Your count is saved on this device.',
           textAlign: TextAlign.center,

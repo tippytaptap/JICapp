@@ -117,6 +117,13 @@ void main() {
     expect(csv, contains('first\nsecond'));
   });
   test(
+    'CSV neutralises formula prefixes after invisible control characters',
+    () {
+      expect(formCsvCell('\u0000=1+1'), startsWith("\"'"));
+      expect(formCsvCell('Normal text'), '"Normal text"');
+    },
+  );
+  test(
     'Delegated managers cannot edit owners, self or more privileged accounts',
     () {
       final manager = <String, dynamic>{

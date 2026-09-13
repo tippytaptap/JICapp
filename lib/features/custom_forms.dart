@@ -281,8 +281,9 @@ class _CustomFormPageState extends State<CustomFormPage> {
       }
       final bytes = buffer.takeBytes();
       if (bytes.isEmpty ||
-          (declaredSize != null && bytes.length != declaredSize))
+          (declaredSize != null && bytes.length != declaredSize)) {
         throw StateError('File changed');
+      }
       final prepared = await formsAction(widget.state, {
         'action': 'upload_prepare',
         'slug': widget.slug,
@@ -743,6 +744,11 @@ class _FormsWorkspacePageState extends State<FormsWorkspacePage> {
   );
 }
 
+String formCsvCell(dynamic value) {
+  var text = value == null ? '' : '$value';
+  if (RegExp(r'^[\s\x00-\x1f]*[=+\-@]').hasMatch(text) || RegExp(r'^[\t\r]').hasMatch(text)) text = "'$text";
+  return '"${text.replaceAll('"', '""')}"';
+}
 String responsesCsv(List<Record> rows) {
   final columns = <String, String>{};
   String source(Record row) => '${row['custom_form_id'] ?? row['kind']}';
@@ -761,8 +767,7 @@ String responsesCsv(List<Record> rows) {
   }
   dynamic cell(dynamic value) =>
       value is List || value is Map ? jsonEncode(value) : value ?? '';
-  return '\ufeff' +
-      [
+  return '\ufeff${[
         [
           'ID',
           'Form',
@@ -770,7 +775,7 @@ String responsesCsv(List<Record> rows) {
           'Submitted',
           'Version',
           ...columns.values,
-        ].map(csvCell).join(','),
+        ].map(formCsvCell).join(','),
         for (final row in rows)
           [
             row['id'],
@@ -782,8 +787,8 @@ String responsesCsv(List<Record> rows) {
               key.startsWith('${source(row)}:')
                   ? cell(row['payload']?[key.substring(source(row).length + 1)])
                   : '',
-          ].map(csvCell).join(','),
-      ].join('\r\n');
+          ].map(formCsvCell).join(','),
+      ].join('\r\n')}';
 }
 
 class CustomInboxPage extends StatefulWidget {

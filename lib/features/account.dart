@@ -221,7 +221,7 @@ class _AccountViewState extends State<AccountView> {
             },
           ),
         ],
-        if (extensionsEnabled)
+        if (extensionsEnabled && !active(s.profile))
           ActionTile(
             icon: Icons.description_outlined,
             title: 'Forms & registrations',

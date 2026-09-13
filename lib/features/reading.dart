@@ -5,15 +5,13 @@ import 'package:flutter/foundation.dart';
 import '../core/app_state.dart';
 import '../core/models.dart';
 import '../core/reading_store.dart';
-import '../core/radio_controller.dart';
 import '../widgets/common.dart';
 import 'tasbih.dart';
 import 'sermons.dart';
 
 class ReadingView extends StatelessWidget {
   final AppState state;
-  final RadioController radio;
-  const ReadingView(this.state, this.radio, {super.key});
+  const ReadingView(this.state, {super.key});
   @override
   Widget build(BuildContext context) => ListView(
     padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
@@ -69,7 +67,7 @@ class ReadingView extends StatelessWidget {
         icon: Icons.mic_none,
         title: 'Talks & reflections',
         subtitle: 'Published talks, transcripts and reviewed summaries',
-        onTap: () => showPage(context, SermonArchivePage(state, radio)),
+        onTap: () => showPage(context, SermonArchivePage(state, state.radio)),
       ),
       const SectionTitle('Build a personal routine'),
       ActionTile(
@@ -952,14 +950,16 @@ class _QuranDownloadsPageState extends State<QuranDownloadsPage> {
                     }
                     await refresh();
                   } catch (_) {
-                    if (context.mounted)
+                    if (context.mounted) {
                       notice(context, 'Some downloads could not be removed.');
+                    }
                   }
-                  if (mounted)
+                  if (mounted) {
                     setState(() {
                       busy = false;
                       status = '';
                     });
+                  }
                 },
           icon: const Icon(Icons.delete_sweep_outlined),
         ),

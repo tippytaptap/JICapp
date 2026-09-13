@@ -95,7 +95,7 @@ void main() {
         cache: cache,
         client: MockClient((_) async {
           requests++;
-          return http.Response(jsonEncode(response()), 200, encoding: utf8);
+          return http.Response.bytes(utf8.encode(jsonEncode(response())), 200);
         }),
       );
       final value = await store.read(1);

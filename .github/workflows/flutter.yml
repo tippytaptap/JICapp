@@ -24,7 +24,27 @@ jobs:
       - run: flutter test --timeout 30s
       - run: flutter build web --no-web-resources-cdn --no-tree-shake-icons
       - run: flutter build apk --debug
+      - name: Build Wear OS
+        run: cd android && ./gradlew :wear:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: android-preview
           path: build/app/outputs/flutter-apk/app-debug.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wear-os-preview
+          path: build/wear/outputs/apk/debug/wear-debug.apk
+  apple:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Flutter
+        run: |
+          git clone --depth 1 --branch 3.47.4 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - run: flutter pub get
+      - run: flutter build ios --simulator --debug
+      - name: Build Apple Watch simulator
+        run: xcodebuild -project ios/Runner.xcodeproj -scheme CommunityWatch -configuration Debug -sdk watchsimulator -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO build

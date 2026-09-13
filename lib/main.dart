@@ -205,7 +205,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           ),
           IconButton(
             tooltip: 'Radio',
-            onPressed: () => showPage(context, RadioPage(widget.radio)),
+            onPressed: () =>
+                showPage(context, RadioPage(widget.radio, state: widget.state)),
             icon: const Icon(Icons.radio_outlined),
           ),
         ],
@@ -238,7 +239,10 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                     dense: true,
                     leading: const Icon(Icons.radio),
                     title: const Text('Live radio'),
-                    onTap: () => showPage(context, RadioPage(widget.radio)),
+                    onTap: () => showPage(
+                      context,
+                      RadioPage(widget.radio, state: widget.state),
+                    ),
                     trailing: IconButton(
                       tooltip: 'Stop radio',
                       onPressed: widget.radio.stop,
