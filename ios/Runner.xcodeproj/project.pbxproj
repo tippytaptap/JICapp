@@ -677,7 +677,7 @@
 			};
 			name = Release;
 		};
-		B9420070000000000000000E /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB21CF90195004384FC; buildSettings = {
+		B9420070000000000000000E /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB31CF90195004384FC; buildSettings = {
                 APPLICATION_EXTENSION_API_ONLY = YES;
                 CLANG_ENABLE_MODULES = YES;
                 CODE_SIGN_ENTITLEMENTS = PrayerWidget/PrayerWidget.entitlements;
@@ -695,7 +695,7 @@
                 SWIFT_VERSION = 5.0;
                 TARGETED_DEVICE_FAMILY = "1,2";
             }; name = Debug; };
-		B9420070000000000000000F /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 7AFA3C8E1D35360C0083082E; buildSettings = {
+		B9420070000000000000000F /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB31CF90195004384FC; buildSettings = {
                 APPLICATION_EXTENSION_API_ONLY = YES;
                 CLANG_ENABLE_MODULES = YES;
                 CODE_SIGN_ENTITLEMENTS = PrayerWidget/PrayerWidget.entitlements;
@@ -713,7 +713,7 @@
                 SWIFT_VERSION = 5.0;
                 TARGETED_DEVICE_FAMILY = "1,2";
             }; name = Release; };
-		B94200700000000000000010 /* Profile */ = {isa = XCBuildConfiguration; baseConfigurationReference = 7AFA3C8E1D35360C0083082E; buildSettings = {
+		B94200700000000000000010 /* Profile */ = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB31CF90195004384FC; buildSettings = {
                 APPLICATION_EXTENSION_API_ONLY = YES;
                 CLANG_ENABLE_MODULES = YES;
                 CODE_SIGN_ENTITLEMENTS = PrayerWidget/PrayerWidget.entitlements;
@@ -731,7 +731,7 @@
                 SWIFT_VERSION = 5.0;
                 TARGETED_DEVICE_FAMILY = "1,2";
             }; name = Profile; };
-		CA7100000000000000000075 = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB21CF90195004384FC; buildSettings = {
+		CA7100000000000000000075 = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB31CF90195004384FC; buildSettings = {
             APPLICATION_EXTENSION_API_ONLY = NO;
             ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
             CLANG_ENABLE_MODULES = YES;
@@ -752,7 +752,7 @@
             TARGETED_DEVICE_FAMILY = 4;
             WATCHOS_DEPLOYMENT_TARGET = 10.0;
         }; name = Debug; };
-		CA7100000000000000000076 = {isa = XCBuildConfiguration; baseConfigurationReference = 7AFA3C8E1D35360C0083082E; buildSettings = {
+		CA7100000000000000000076 = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB31CF90195004384FC; buildSettings = {
             APPLICATION_EXTENSION_API_ONLY = NO;
             ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
             CLANG_ENABLE_MODULES = YES;
@@ -773,7 +773,7 @@
             TARGETED_DEVICE_FAMILY = 4;
             WATCHOS_DEPLOYMENT_TARGET = 10.0;
         }; name = Release; };
-		CA7100000000000000000077 = {isa = XCBuildConfiguration; baseConfigurationReference = 7AFA3C8E1D35360C0083082E; buildSettings = {
+		CA7100000000000000000077 = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB31CF90195004384FC; buildSettings = {
             APPLICATION_EXTENSION_API_ONLY = NO;
             ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
             CLANG_ENABLE_MODULES = YES;
@@ -794,7 +794,7 @@
             TARGETED_DEVICE_FAMILY = 4;
             WATCHOS_DEPLOYMENT_TARGET = 10.0;
         }; name = Profile; };
-		CA71000000000000000000D9 = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB21CF90195004384FC; buildSettings = {
+		CA71000000000000000000D9 = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB31CF90195004384FC; buildSettings = {
             APPLICATION_EXTENSION_API_ONLY = YES;
             CLANG_ENABLE_MODULES = YES;
             CODE_SIGN_ENTITLEMENTS = WatchWidgets/WatchWidgets.entitlements;
@@ -814,7 +814,7 @@
             TARGETED_DEVICE_FAMILY = 4;
             WATCHOS_DEPLOYMENT_TARGET = 10.0;
         }; name = Debug; };
-		CA71000000000000000000DA = {isa = XCBuildConfiguration; baseConfigurationReference = 7AFA3C8E1D35360C0083082E; buildSettings = {
+		CA71000000000000000000DA = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB31CF90195004384FC; buildSettings = {
             APPLICATION_EXTENSION_API_ONLY = YES;
             CLANG_ENABLE_MODULES = YES;
             CODE_SIGN_ENTITLEMENTS = WatchWidgets/WatchWidgets.entitlements;
@@ -834,7 +834,7 @@
             TARGETED_DEVICE_FAMILY = 4;
             WATCHOS_DEPLOYMENT_TARGET = 10.0;
         }; name = Release; };
-		CA71000000000000000000DB = {isa = XCBuildConfiguration; baseConfigurationReference = 7AFA3C8E1D35360C0083082E; buildSettings = {
+		CA71000000000000000000DB = {isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB31CF90195004384FC; buildSettings = {
             APPLICATION_EXTENSION_API_ONLY = YES;
             CLANG_ENABLE_MODULES = YES;
             CODE_SIGN_ENTITLEMENTS = WatchWidgets/WatchWidgets.entitlements;
