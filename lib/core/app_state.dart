@@ -32,6 +32,7 @@ class AppState extends ChangeNotifier {
       announcements = [],
       library = [];
   Record branding = {}, livestream = {};
+  Set<String> linkedHomePosters = {};
   StreamSubscription<AuthState>? _auth;
   int _authGeneration = 0;
   bool _refreshing = false;
@@ -132,6 +133,14 @@ class AppState extends ChangeNotifier {
 
       await Future.wait([
         load(
+          client!.rpc('list_site_pages', params: {'p_placement': '/'}),
+          (r) => linkedHomePosters = records(r)
+              .where((p) => p['placement'] == '/' && p['published'] != false)
+              .map((p) => p['source_poster_id'])
+              .whereType<String>()
+              .toSet(),
+        ),
+        load(
           client!
               .from('prayer_times')
               .select()
@@ -189,6 +198,7 @@ class AppState extends ChangeNotifier {
                 'reading_library',
               ]),
           (r) {
+            programmes = defaults;
             for (final row in records(r)) {
               dynamic value = row['content_value'];
               try {
@@ -198,6 +208,7 @@ class AppState extends ChangeNotifier {
               }
               switch (row['content_key']) {
                 case 'programme_posters':
+                  if (value is! List) continue;
                   programmes = records(value)
                       .where((p) => p['id'] is String && p['title'] is String)
                       .take(100)
@@ -249,12 +260,19 @@ class AppState extends ChangeNotifier {
   String? image(dynamic value) {
     final resolved = organisation.resolveImage(value);
     if (resolved == null) return null;
+    // A managed poster can replace the picture at the original website path.
+    return identical(programmes, defaults)
+        ? bundledPosterImage(value) ?? resolved
+        : resolved;
+  }
+
+  String? bundledPosterImage(dynamic value) {
     if (value is String &&
         value.startsWith('/posters/') &&
         defaults.any((p) => p['image'] == value)) {
       return 'assets$value';
     }
-    return resolved;
+    return null;
   }
 
   @override

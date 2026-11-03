@@ -92,12 +92,14 @@ class ActionTile extends StatelessWidget {
 
 class ContentImage extends StatelessWidget {
   final String? source;
+  final String? fallbackAsset;
   final double? height;
   final BoxFit fit;
   const ContentImage(
     this.source, {
     super.key,
     this.height,
+    this.fallbackAsset,
     this.fit = BoxFit.cover,
   });
   @override
@@ -120,7 +122,15 @@ class ContentImage extends StatelessWidget {
             height: height,
             width: double.infinity,
             fit: fit,
-            errorBuilder: fallback,
+            errorBuilder: (context, error, stack) => fallbackAsset == null
+                ? fallback(context, error, stack)
+                : Image.asset(
+                    fallbackAsset!,
+                    height: height,
+                    width: double.infinity,
+                    fit: fit,
+                    errorBuilder: fallback,
+                  ),
           );
   }
 }
