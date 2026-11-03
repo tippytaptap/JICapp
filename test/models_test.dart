@@ -58,6 +58,16 @@ void main() {
       1,
     );
   });
+  test('Home shares website poster placements and reads earlier catalogues', () {
+    const linked = {'course'};
+    final legacy = <String, dynamic>{'id': 'course', 'groups': ['education']};
+    expect(posterOnHome(legacy, linked), isTrue);
+    expect(posterOnHome(legacy, {}), isFalse);
+    expect(posterOnHome({'groups': ['home']}, {}), isTrue);
+    expect(posterOnHome({'website_locations': ['/']}, {}), isTrue);
+    expect(posterOnHome({...legacy, 'website_locations': []}, linked), isFalse);
+    expect(posterOnHome({'website_locations': ['/education'], 'groups': ['home']}, {}), isFalse);
+  });
   test('Prayer times use the centre timezone through BST', () {
     expect(
       prayerMoment('2026-07-01', '13:00', 'Europe/London')!.toUtc().hour,

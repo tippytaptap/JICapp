@@ -50,6 +50,14 @@ bool safeWebUrl(String value) {
       !value.contains(RegExp(r'[\s\\]'));
 }
 
+bool posterOnHome(Record poster, Set<String> linkedHomePosters) {
+  final locations = poster['website_locations'];
+  if (locations is List) return locations.contains('/');
+  final groups = poster['groups'];
+  return (groups is List && groups.contains('home')) ||
+      linkedHomePosters.contains(poster['id']);
+}
+
 bool adultProgramme(Record p) {
   if (p['kind'] == 'announcement' ||
       !(p['groups'] is List && (p['groups'] as List).contains('education'))) {

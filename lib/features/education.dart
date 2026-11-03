@@ -113,6 +113,7 @@ class ProgrammeCard extends StatelessWidget {
               InteractiveViewer(
                 child: ContentImage(
                   state.image(programme['image']),
+                  fallbackAsset: state.bundledPosterImage(programme['image']),
                   fit: BoxFit.contain,
                 ),
               ),
@@ -140,6 +141,7 @@ class ProgrammeCard extends StatelessWidget {
         children: [
           ContentImage(
             state.image(programme['image']),
+            fallbackAsset: state.bundledPosterImage(programme['image']),
             height: 240,
             fit: BoxFit.contain,
           ),

@@ -94,6 +94,16 @@ class HomeView extends StatelessWidget {
           ),
         const SizedBox(height: 12),
         PrayerCard(state),
+        TextButton.icon(
+          onPressed: () => openLink(
+            context,
+            Uri.parse(state.organisation.website)
+                .resolve('/prayer-times/monthly#phone-wallpaper')
+                .toString(),
+          ),
+          icon: const Icon(Icons.download_outlined),
+          label: const Text('Download wallpaper'),
+        ),
         for (final a in state.announcements)
           Card(
             child: ListTile(
@@ -125,20 +135,60 @@ class HomeView extends StatelessWidget {
           subtitle: 'Gatherings, learning and community',
         ),
         for (final p in state.programmes.where(
-          (p) =>
-              (p['groups'] as List? ?? []).contains('home') &&
-              p['kind'] != 'announcement',
+          (p) => posterOnHome(p, state.linkedHomePosters),
         ))
-          ProgrammeCard(state, p),
+          if (p['kind'] == 'announcement')
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${p['title']}',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text('${p['body'] ?? ''}'),
+                    if (p['images'] is List)
+                      for (final image in (p['images'] as List).whereType<String>().take(2))
+                        ContentImage(
+                          state.image(image),
+                          fallbackAsset: state.bundledPosterImage(image),
+                          fit: BoxFit.contain,
+                        ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ProgrammeCard(state, p),
         for (final event in state.events)
           Card(
             child: ListTile(
+              leading: state.image(event['poster_url']) == null
+                  ? null
+                  : SizedBox(
+                      width: 48,
+                      child: ContentImage(
+                        state.image(event['poster_url']),
+                        fallbackAsset: state.bundledPosterImage(event['poster_url']),
+                        height: 56,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
               title: Text('${event['title']}'),
               subtitle: Text(
                 '${event['event_date']}\n${event['description'] ?? ''}',
               ),
             ),
           ),
+        TextButton(
+          onPressed: () => openLink(
+            context,
+            Uri.parse(state.organisation.website).resolve('/events').toString(),
+          ),
+          child: const Text('View all activities'),
+        ),
         if (state.livestream['enabled'] == true &&
             safeWebUrl('${state.livestream['youtube_url']}'))
           ActionTile(
